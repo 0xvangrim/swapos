@@ -2,7 +2,7 @@ import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
 import { ethers } from 'hardhat'
 import crypto, { BinaryLike } from 'crypto'
-import { Provider, TransactionResponse } from '@ethersproject/providers'
+import { TransactionResponse } from '@ethersproject/providers'
 import { Contract } from 'ethers'
 import { EventFragment, FormatTypes, LogDescription } from '@ethersproject/abi'
 
@@ -59,11 +59,6 @@ describe('HashedTimelock swap between two ERC20 tokens', function () {
       secret: bufToStr(secret),
       hash: bufToStr(hash),
     }
-  }
-
-  const getBlockNumber = async (provider?: Provider) => {
-    if (!provider) throw new Error('No provider')
-    return provider.getBlockNumber()
   }
 
   const getTxLogs = async (txResponse: TransactionResponse, contract: Contract) => {
