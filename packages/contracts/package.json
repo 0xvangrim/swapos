@@ -5,6 +5,7 @@
   "scripts": {
     "clean": "pnpm hardhat clean",
     "compile": "pnpm hardhat compile",
+    "test": "pnpm hardhat test",
     "dev": "pnpm run build && pnpm run deploy",
     "build": "pnpm clean && pnpm compile",
     "start": "pnpm run deploy",
