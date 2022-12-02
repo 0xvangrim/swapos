@@ -1,12 +1,12 @@
+import { EventFragment, FormatTypes, LogDescription } from '@ethersproject/abi'
+import { TransactionResponse } from '@ethersproject/providers'
 import { loadFixture, time } from '@nomicfoundation/hardhat-network-helpers'
 import { expect } from 'chai'
-import { ethers } from 'hardhat'
 import crypto, { BinaryLike } from 'crypto'
-import { TransactionResponse } from '@ethersproject/providers'
 import { Contract } from 'ethers'
-import { EventFragment, FormatTypes, LogDescription } from '@ethersproject/abi'
+import { ethers } from 'hardhat'
 
-describe('HashedTimelock swap between two ERC20 tokens', function () {
+describe('HashedTimelock swap between two ERC20 tokens', function() {
   const tokenSupply = 1000
   const senderInitialBalance = 100
   const tokenAmount = 5
@@ -48,7 +48,11 @@ describe('HashedTimelock swap between two ERC20 tokens', function () {
   //  - prefixed with 0x
   const bufToStr = (b: Buffer) => '0x' + b.toString('hex')
 
-  const sha256 = (x: BinaryLike) => crypto.createHash('sha256').update(x).digest()
+  const sha256 = (x: BinaryLike) =>
+    crypto
+      .createHash('sha256')
+      .update(x)
+      .digest()
 
   const random32 = () => crypto.randomBytes(32)
 
@@ -65,7 +69,7 @@ describe('HashedTimelock swap between two ERC20 tokens', function () {
     const txReceipt = await txResponse.wait()
 
     return txReceipt.logs
-      .map((log) => {
+      .map(log => {
         try {
           return contract.interface.parseLog(log)
         } catch (e) {
@@ -76,10 +80,10 @@ describe('HashedTimelock swap between two ERC20 tokens', function () {
   }
 
   const getTxLog = (txLogs: LogDescription[], event: EventFragment) => {
-    return txLogs.find((log) => event.format(FormatTypes.sighash) === log.signature)
+    return txLogs.find(log => event.format(FormatTypes.sighash) === log.signature)
   }
 
-  it('Should be setup correctly', async function () {
+  it('Should be setup correctly', async function() {
     const { Alice, Bob, aliceERC20, bobERC20 } = await loadFixture(deployContractsFixture)
 
     expect(await aliceERC20.balanceOf(Alice.address)).to.equal(senderInitialBalance)
@@ -98,7 +102,7 @@ describe('HashedTimelock swap between two ERC20 tokens', function () {
     // she does not need to worry about Bob unilaterally take ownership of the tokens
     // without fulfilling his side of the deal, because this transfer is locked by a hashed secret
     // that only Alice knows at this point
-    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    const aliceTimeLock = (await time.latest()) + 10 // 10 seconds
     await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
     const aliceContractTx: TransactionResponse = await htlc
       .connect(Alice)
@@ -212,5 +216,276 @@ describe('HashedTimelock swap between two ERC20 tokens', function () {
 
     expect(await bobERC20.balanceOf(Bob.address)).to.equal(senderInitialBalance)
     expect(await bobERC20.balanceOf(htlc.address)).to.equal(0)
+  })
+
+  it('should not allow deposits without approval', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await expect(
+      htlc
+        .connect(Alice)
+        .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount),
+    ).to.be.revertedWith('tokensTransferable: token allowance must be >= amount')
+  })
+
+  it('should not allow deposits without balance', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+    await expect(
+      htlc
+        .connect(Alice)
+        .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, 0),
+    ).to.be.revertedWith('tokensTransferable: token amount must be > 0')
+  })
+
+  it('should not allow deposits with timelock in the past', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+
+    let aliceTimeLock = await time.latest() // current time
+    await expect(
+      htlc
+        .connect(Alice)
+        .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount),
+    ).to.be.revertedWith('futureTimelock: timelock time must be in the future')
+
+    aliceTimeLock = (await time.latest()) - 5 // current time
+    await expect(
+      htlc
+        .connect(Alice)
+        .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount),
+    ).to.be.revertedWith('futureTimelock: timelock time must be in the future')
+  })
+
+  it('should not allow duplicate contract IDs', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount * 2)
+
+    const aliceTimeLock = (await time.latest()) + 5 // current time
+    await htlc
+      .connect(Alice)
+      .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount)
+
+    await expect(
+      htlc
+        .connect(Alice)
+        .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount),
+    ).to.be.revertedWith('newContract: Contract already exists')
+  })
+
+  it('should not allow withdrawals on non-existing contracts', async () => {
+    const { Bob, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    await expect(
+      htlc
+        .connect(Bob)
+        .withdraw(
+          '0x2335bdc450f6affcf18b52ea4e50076346d79533fe5131664b50feea35e0f307',
+          hashPair.secret,
+        ),
+    ).to.be.revertedWith('contractExists: contractId does not exist')
+  })
+
+  it('should not allow withdrawals on incorrect hashlock', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    // Step 1: Alice sets up a swap with Bob in the AliceERC20 contract
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+    const aliceContractTx: TransactionResponse = await htlc
+      .connect(Alice)
+      .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount)
+    const aliceTxLogs = await getTxLogs(aliceContractTx, htlc)
+    const aliceTxEvent = getTxLog(aliceTxLogs, htlc.interface.getEvent('HTLCERC20Created'))
+
+    const a2bSwapId = aliceTxEvent?.args.contractId
+
+    await expect(htlc.connect(Bob).withdraw(a2bSwapId, hashPair.hash)).to.be.revertedWith(
+      'hashlockMatches: hashlock hash does not match',
+    )
+    expect(await aliceERC20.balanceOf(Bob.address)).to.equal(0)
+    expect(await aliceERC20.balanceOf(htlc.address)).to.equal(tokenAmount)
+  })
+
+  it('should only allow withdrawals from receiver', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    // Step 1: Alice sets up a swap with Bob in the AliceERC20 contract
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+    const aliceContractTx: TransactionResponse = await htlc
+      .connect(Alice)
+      .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount)
+    const aliceTxLogs = await getTxLogs(aliceContractTx, htlc)
+    const aliceTxEvent = getTxLog(aliceTxLogs, htlc.interface.getEvent('HTLCERC20Created'))
+
+    const a2bSwapId = aliceTxEvent?.args.contractId
+
+    await expect(htlc.connect(Alice).withdraw(a2bSwapId, hashPair.secret)).to.be.revertedWith(
+      'withdrawable: not receiver',
+    )
+    expect(await aliceERC20.balanceOf(Alice.address)).to.equal(senderInitialBalance - tokenAmount)
+    expect(await aliceERC20.balanceOf(Bob.address)).to.equal(0)
+    expect(await aliceERC20.balanceOf(htlc.address)).to.equal(tokenAmount)
+  })
+
+  it('should not allow duplicate withdrawals', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    // Step 1: Alice sets up a swap with Bob in the AliceERC20 contract
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+    const aliceContractTx: TransactionResponse = await htlc
+      .connect(Alice)
+      .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount)
+    const aliceTxLogs = await getTxLogs(aliceContractTx, htlc)
+    const aliceTxEvent = getTxLog(aliceTxLogs, htlc.interface.getEvent('HTLCERC20Created'))
+
+    const a2bSwapId = aliceTxEvent?.args.contractId
+    await htlc.connect(Bob).withdraw(a2bSwapId, hashPair.secret)
+
+    await expect(htlc.connect(Bob).withdraw(a2bSwapId, hashPair.secret)).to.be.revertedWith(
+      'withdrawable: already withdrawn',
+    )
+    expect(await aliceERC20.balanceOf(Alice.address)).to.equal(senderInitialBalance - tokenAmount)
+    expect(await aliceERC20.balanceOf(Bob.address)).to.equal(tokenAmount)
+    expect(await aliceERC20.balanceOf(htlc.address)).to.equal(0)
+  })
+
+  it('should not allow withdrawals after timelock', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    // Step 1: Alice sets up a swap with Bob in the AliceERC20 contract
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+    const aliceContractTx: TransactionResponse = await htlc
+      .connect(Alice)
+      .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount)
+    const aliceTxLogs = await getTxLogs(aliceContractTx, htlc)
+    const aliceTxEvent = getTxLog(aliceTxLogs, htlc.interface.getEvent('HTLCERC20Created'))
+
+    const a2bSwapId = aliceTxEvent?.args.contractId
+
+    await time.increaseTo(aliceTimeLock)
+
+    await expect(htlc.connect(Bob).withdraw(a2bSwapId, hashPair.secret)).to.be.revertedWith(
+      'withdrawable: timelock expired',
+    )
+    expect(await aliceERC20.balanceOf(Bob.address)).to.equal(0)
+    expect(await aliceERC20.balanceOf(htlc.address)).to.equal(tokenAmount)
+  })
+
+  it('should not allow refunds on non-existing contracts', async () => {
+    const { Bob, htlc } = await loadFixture(deployContractsFixture)
+
+    await expect(
+      htlc
+        .connect(Bob)
+        .refund('0x2335bdc450f6affcf18b52ea4e50076346d79533fe5131664b50feea35e0f307'),
+    ).to.be.revertedWith('contractExists: contractId does not exist')
+  })
+
+  it('should only allow refunds from sender', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    // Step 1: Alice sets up a swap with Bob in the AliceERC20 contract
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+    const aliceContractTx: TransactionResponse = await htlc
+      .connect(Alice)
+      .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount)
+    const aliceTxLogs = await getTxLogs(aliceContractTx, htlc)
+    const aliceTxEvent = getTxLog(aliceTxLogs, htlc.interface.getEvent('HTLCERC20Created'))
+
+    const a2bSwapId = aliceTxEvent?.args.contractId
+
+    await time.increaseTo(aliceTimeLock)
+
+    await expect(htlc.connect(Bob).refund(a2bSwapId)).to.be.revertedWith('refundable: not sender')
+    expect(await aliceERC20.balanceOf(Alice.address)).to.equal(senderInitialBalance - tokenAmount)
+    expect(await aliceERC20.balanceOf(Bob.address)).to.equal(0)
+    expect(await aliceERC20.balanceOf(htlc.address)).to.equal(tokenAmount)
+  })
+
+  it('should not allow duplicate refunds', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    // Step 1: Alice sets up a swap with Bob in the AliceERC20 contract
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+    const aliceContractTx: TransactionResponse = await htlc
+      .connect(Alice)
+      .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount)
+    const aliceTxLogs = await getTxLogs(aliceContractTx, htlc)
+    const aliceTxEvent = getTxLog(aliceTxLogs, htlc.interface.getEvent('HTLCERC20Created'))
+    const a2bSwapId = aliceTxEvent?.args.contractId
+
+    await time.increaseTo(aliceTimeLock)
+
+    await htlc.connect(Alice).refund(a2bSwapId)
+
+    await expect(htlc.connect(Alice).refund(a2bSwapId)).to.be.revertedWith(
+      'refundable: already refunded',
+    )
+    expect(await aliceERC20.balanceOf(Alice.address)).to.equal(senderInitialBalance)
+    expect(await aliceERC20.balanceOf(Bob.address)).to.equal(0)
+    expect(await aliceERC20.balanceOf(htlc.address)).to.equal(0)
+  })
+
+  it('should not allow refunds on withdrawn contracts', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    // Step 1: Alice sets up a swap with Bob in the AliceERC20 contract
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+    const aliceContractTx: TransactionResponse = await htlc
+      .connect(Alice)
+      .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount)
+    const aliceTxLogs = await getTxLogs(aliceContractTx, htlc)
+    const aliceTxEvent = getTxLog(aliceTxLogs, htlc.interface.getEvent('HTLCERC20Created'))
+    const a2bSwapId = aliceTxEvent?.args.contractId
+
+    await htlc.connect(Bob).withdraw(a2bSwapId, hashPair.secret)
+
+    await time.increaseTo(aliceTimeLock)
+
+    await expect(htlc.connect(Alice).refund(a2bSwapId)).to.be.revertedWith(
+      'refundable: already withdrawn',
+    )
+    expect(await aliceERC20.balanceOf(Alice.address)).to.equal(senderInitialBalance - tokenAmount)
+    expect(await aliceERC20.balanceOf(Bob.address)).to.equal(tokenAmount)
+    expect(await aliceERC20.balanceOf(htlc.address)).to.equal(0)
+  })
+
+  it('should not allow refunds before timelock', async () => {
+    const { Alice, Bob, aliceERC20, htlc, hashPair } = await loadFixture(deployContractsFixture)
+
+    // Step 1: Alice sets up a swap with Bob in the AliceERC20 contract
+    const aliceTimeLock = (await time.latest()) + 5 // 5 seconds
+    await aliceERC20.connect(Alice).approve(htlc.address, tokenAmount)
+    const aliceContractTx: TransactionResponse = await htlc
+      .connect(Alice)
+      .newContract(Bob.address, hashPair.hash, aliceTimeLock, aliceERC20.address, tokenAmount)
+    const aliceTxLogs = await getTxLogs(aliceContractTx, htlc)
+    const aliceTxEvent = getTxLog(aliceTxLogs, htlc.interface.getEvent('HTLCERC20Created'))
+
+    const a2bSwapId = aliceTxEvent?.args.contractId
+
+    await expect(htlc.connect(Alice).refund(a2bSwapId)).to.be.revertedWith(
+      'refundable: timelock not yet passed',
+    )
+    expect(await aliceERC20.balanceOf(Alice.address)).to.equal(senderInitialBalance - tokenAmount)
+    expect(await aliceERC20.balanceOf(htlc.address)).to.equal(tokenAmount)
+
+    await time.increaseTo(aliceTimeLock)
+
+    await htlc.connect(Alice).refund(a2bSwapId)
+    expect(await aliceERC20.balanceOf(Alice.address)).to.equal(senderInitialBalance)
+    expect(await aliceERC20.balanceOf(htlc.address)).to.equal(0)
   })
 })
