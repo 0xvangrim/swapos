@@ -6,7 +6,7 @@ import crypto, { BinaryLike } from 'crypto'
 import { Contract } from 'ethers'
 import { ethers } from 'hardhat'
 
-describe('HashedTimelock swap between two ERC20 tokens', function() {
+describe('ERC20AtomicSwap between two ERC20 tokens', function() {
   const tokenSupply = 1000
   const senderInitialBalance = 100
   const tokenAmount = 5

@@ -52,10 +52,10 @@ contract ERC20AtomicSwap {
     address _sender,
     uint256 _amount
   ) {
-    require(_amount > 0, 'token amount must be > 0');
+    require(_amount > 0, 'tokensTransferable: token amount must be > 0');
     require(
       ERC20(_token).allowance(_sender, address(this)) >= _amount,
-      'token allowance must be >= amount'
+      'tokensTransferable: token allowance must be >= amount'
     );
     _;
   }
@@ -64,19 +64,19 @@ contract ERC20AtomicSwap {
     // only requirement is the timelock time is after the last blocktime (now).
     // probably want something a bit further in the future then this.
     // but this is still a useful sanity check:
-    require(_timelock > block.timestamp, 'timelock time must be in the future');
+    require(_timelock > block.timestamp, 'futureTimelock: timelock time must be in the future');
     _;
   }
 
   modifier contractExists(bytes32 _contractId) {
-    require(haveContract(_contractId), 'contractId does not exist');
+    require(haveContract(_contractId), 'contractExists: contractId does not exist');
     _;
   }
 
   modifier hashlockMatches(bytes32 _contractId, bytes32 _x) {
     require(
       contracts[_contractId].hashlock == sha256(abi.encodePacked(_x)),
-      'hashlock hash does not match'
+      'hashlockMatches: hashlock hash does not match'
     );
     _;
   }
@@ -85,9 +85,9 @@ contract ERC20AtomicSwap {
     require(contracts[_contractId].receiver == msg.sender, 'withdrawable: not receiver');
     require(contracts[_contractId].withdrawn == false, 'withdrawable: already withdrawn');
     // This check needs to be added if claims are allowed after timeout. That is, if the following timelock check is commented out
-    require(contracts[_contractId].refunded == false, 'withdrawable: already refunded');
+    // require(contracts[_contractId].refunded == false, 'withdrawable: already refunded');
     // if we want to disallow claim to be made after the timeout, uncomment the following line
-    // require(contracts[_contractId].timelock > now, "withdrawable: timelock time must be in the future");
+    require(contracts[_contractId].timelock > block.timestamp, "withdrawable: timelock expired");
     _;
   }
 
@@ -132,17 +132,17 @@ contract ERC20AtomicSwap {
     returns (bytes32 contractId)
   {
     contractId = sha256(
-      abi.encodePacked(msg.sender, address(0), _tokenContract, _amount, _hashlock, _timelock)
+      abi.encodePacked(msg.sender, _receiver, _tokenContract, _amount, _hashlock, _timelock)
     );
 
     // Reject if a contract already exists with the same parameters. The
     // sender must change one of these parameters (ideally providing a
     // different _hashlock).
-    if (haveContract(contractId)) revert('Contract already exists');
+    if (haveContract(contractId)) revert('newContract: Contract already exists');
 
     // This contract becomes the temporary owner of the tokens
     if (!ERC20(_tokenContract).transferFrom(msg.sender, address(this), _amount))
-      revert('transferFrom sender to this failed');
+      revert('newContract: transferFrom sender to this failed');
 
     contracts[contractId] = LockContract(
       msg.sender,
