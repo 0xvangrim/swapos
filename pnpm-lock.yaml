@@ -20,6 +20,7 @@ importers:
     specifiers:
       '@ethersproject/abi': ^5.7.0
       '@ethersproject/providers': ^5.7.2
+      '@hyperlane-xyz/core': 0.5.4-3
       '@nomicfoundation/hardhat-chai-matchers': ^1.0.4
       '@nomicfoundation/hardhat-network-helpers': ^1.0.6
       '@nomicfoundation/hardhat-toolbox': ^2.0.0
@@ -46,6 +47,8 @@ importers:
       ts-node: ^10.9.1
       typechain: ^8.1.1
       typescript: ^4.9.3
+    dependencies:
+      '@hyperlane-xyz/core': 0.5.4-3
     devDependencies:
       '@ethersproject/abi': 5.7.0
       '@ethersproject/providers': 5.7.2
@@ -3071,6 +3074,26 @@ packages:
     resolution: {integrity: sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==}
     dev: true
 
+  /@hyperlane-xyz/core/0.5.4-3:
+    resolution: {integrity: sha512-7DxRVMaSRzXdUMsMT7dlVKZHFvI9LJT8xc9hbE5VmcDBUU+O9RZd7i2OCV85uMfMZ33lh0sPyh4D7twayz1v1Q==}
+    dependencies:
+      '@hyperlane-xyz/utils': 0.5.4-3
+      '@openzeppelin/contracts': 4.8.0
+      '@openzeppelin/contracts-upgradeable': 4.8.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
+  /@hyperlane-xyz/utils/0.5.4-3:
+    resolution: {integrity: sha512-EIsNZX0DyYYkWCnMcNPx4Z52WJUuMQe/4JMWx39/UkgHlUIpI8pUmRMyMRF0Cjw3hu2s/Vxni9S7ZpWatErRZw==}
+    dependencies:
+      ethers: 5.7.2
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+    dev: false
+
   /@jest/create-cache-key-function/29.3.1:
     resolution: {integrity: sha512-4i+E+E40gK13K78ffD/8cy4lSSqeWwyXeTZoq16tndiCP12hC8uQsPJdIu5C6Kf22fD8UbBk71so7s/6VwpUOQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -3733,9 +3756,12 @@ packages:
       - supports-color
     dev: true
 
+  /@openzeppelin/contracts-upgradeable/4.8.0:
+    resolution: {integrity: sha512-5GeFgqMiDlqGT8EdORadp1ntGF0qzWZLmEY7Wbp/yVhN7/B3NNzCxujuI77ktlyG81N3CUZP8cZe3ZAQ/cW10w==}
+    dev: false
+
   /@openzeppelin/contracts/4.8.0:
     resolution: {integrity: sha512-AGuwhRRL+NaKx73WKRNzeCxOCOCxpaqF+kp8TJ89QzAipSwZy/NoflkWaL9bywXFRhIzXt8j38sfF7KBKCPWLw==}
-    dev: true
 
   /@pedrouid/environment/1.0.1:
     resolution: {integrity: sha512-HaW78NszGzRZd9SeoI3JD11JqY+lubnaOx7Pewj5pfjqWXOEATpeKIFb9Z4t2WBUK2iryiXX3lzWwmYWgUL0Ug==}

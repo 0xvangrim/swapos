@@ -44,6 +44,9 @@
       "statusBarItem.hoverBackground": "#00c2a8",
       "statusBarItem.remoteBackground": "#00f5d4",
       "statusBarItem.remoteForeground": "#15202b"
+    },
+    "[solidity]": {
+      "editor.defaultFormatter": "JuanBlanco.solidity"
     }
   }
 }
