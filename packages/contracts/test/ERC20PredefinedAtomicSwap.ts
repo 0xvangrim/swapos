@@ -5,7 +5,7 @@ import { expect } from 'chai'
 import { constants, Contract } from 'ethers'
 import { ethers } from 'hardhat'
 
-describe.only('ERC20PredefinedAtomicSwap between two ERC20 tokens', function() {
+describe('ERC20PredefinedAtomicSwap between two ERC20 tokens', function() {
   const tokenSupply = 1000
   const initialBalance = 100
   const senderTokenAmount = 5
