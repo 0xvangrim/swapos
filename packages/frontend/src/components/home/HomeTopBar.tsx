@@ -1,23 +1,23 @@
-import Link from 'next/link'
+import { Box, Heading } from '@chakra-ui/react'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { FC } from 'react'
-import { HiOutlineExternalLink } from 'react-icons/hi'
-import 'twin.macro'
 
 export const HomeTopBar: FC = () => {
-  const title = 'INK!athon'
-  const desc = 'Substrate-based DApp Boilerplate'
-  const href = 'https://inkathon.xyz'
-
   return (
     <>
-      <Link
-        href={href}
-        tw="absolute top-0 left-0 right-0 z-10 flex items-center justify-center whitespace-pre-wrap bg-gray-900 py-2 px-2 text-center font-semibold text-sm text-white/75 hover:text-white"
+      <Box
+        display="flex"
+        flexDirection={'row'}
+        justifyContent={'space-between'}
+        p={'16px'}
+        alignItems={'center'}
+        mt={0}
+        bg={'rgba(255, 255, 255, 0.5)'}
+        borderBottom={'1px solid #E1E1E1'}
       >
-        <div tw="font-bold">{title}</div>
-        <div tw="hidden sm:inline"> – {desc}</div>
-        <HiOutlineExternalLink tw="ml-1.5" />
-      </Link>
+        <Heading>SwapOS</Heading>
+        <ConnectButton label="Connect" />
+      </Box>
     </>
   )
 }

@@ -22,7 +22,6 @@
     "@emotion/react": "^11.10.5",
     "@emotion/server": "^11.10.0",
     "@emotion/styled": "^11.10.5",
-    "@ethathon/contracts": "workspace:*",
     "@rainbow-me/rainbowkit": "^0.8.0",
     "add": "^2.0.6",
     "ethers": "^5.7.2",

@@ -10,7 +10,7 @@ export const HotToastConfig: FC = () => {
           marginTop: '2rem',
           wordBreak: 'break-all',
           maxWidth: '30rem',
-          background: '#1a1b1f',
+          background: 'white',
           color: 'white',
           borderRadius: '12px',
         },
