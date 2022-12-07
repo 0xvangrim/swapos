@@ -1,5 +1,6 @@
 import { Box, Heading } from '@chakra-ui/react'
 import { FC } from 'react'
+import { SwapCard } from '../primitives/SwapCard'
 
 export const RequestedSwapsWrapper: FC = () => {
   return (
@@ -11,18 +12,29 @@ export const RequestedSwapsWrapper: FC = () => {
         flexDir={'column'}
         alignItems={'center'}
         backgroundColor={'#F9F9F9'}
+        paddingTop={'32px'}
       >
-        <Heading
-          fontSize={'24px'}
-          color={'#9C9C9C'}
-          fontStyle={'normal'}
-          lineHeight={'26px'}
-          display={'flex'}
-          alignItems={'center'}
-        >
-          Requested swaps
-        </Heading>
-        <Box></Box>
+        <Box>
+          <Heading
+            fontSize={'24px'}
+            color={'#9C9C9C'}
+            fontStyle={'normal'}
+            lineHeight={'26px'}
+            fontWeight={500}
+          >
+            Requested swaps
+          </Heading>
+        </Box>
+        <Box>
+          <SwapCard />
+          <SwapCard />
+          <SwapCard />
+          <SwapCard />
+          <SwapCard />
+          <SwapCard />
+          <SwapCard />
+        </Box>
+        <Box />
       </Box>
     </>
   )

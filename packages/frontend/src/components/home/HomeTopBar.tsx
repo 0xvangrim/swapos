@@ -1,4 +1,5 @@
-import { Box, Heading } from '@chakra-ui/react'
+import { Box, Heading, Stack } from '@chakra-ui/react'
+import { RequestButton } from '@components/primitives/RequestButton'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { FC } from 'react'
 
@@ -15,8 +16,13 @@ export const HomeTopBar: FC = () => {
         bg={'rgba(255, 255, 255, 0.5)'}
         borderBottom={'1px solid #E1E1E1'}
       >
-        <Heading>SwapOS</Heading>
-        <ConnectButton label="Connect" />
+        <Heading as="h1" size="lg" lineHeight={'26px'} fontWeight={500}>
+          SwapOS
+        </Heading>
+        <Stack direction="row" spacing={4} align="center">
+          <ConnectButton label="Connect" />
+          <RequestButton />
+        </Stack>
       </Box>
     </>
   )
