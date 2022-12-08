@@ -1,4 +1,4 @@
-import { ChakraProvider, DarkMode } from '@chakra-ui/react'
+import { ChakraProvider } from '@chakra-ui/react'
 import { BaseLayout } from '@components/layout/BaseLayout'
 import { HotToastConfig } from '@components/layout/HotToastConfig'
 import { cache } from '@emotion/css'
@@ -27,23 +27,21 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <CacheProvider value={cache}>
         <ChakraProvider theme={theme}>
-          <DarkMode>
-            <GlobalStyles />
-            <WagmiConfig client={wagmiClient}>
-              <RainbowKitProvider
-                chains={chains}
-                theme={darkTheme({
-                  accentColor: 'black',
-                })}
-                coolMode={true}
-              >
-                <BaseLayout>
-                  <Component {...pageProps} />
-                </BaseLayout>
-              </RainbowKitProvider>
-            </WagmiConfig>
-            <HotToastConfig />
-          </DarkMode>
+          <GlobalStyles />
+          <WagmiConfig client={wagmiClient}>
+            <RainbowKitProvider
+              chains={chains}
+              theme={darkTheme({
+                accentColor: 'black',
+              })}
+              coolMode={true}
+            >
+              <BaseLayout>
+                <Component {...pageProps} />
+              </BaseLayout>
+            </RainbowKitProvider>
+          </WagmiConfig>
+          <HotToastConfig />
         </ChakraProvider>
       </CacheProvider>
     </>

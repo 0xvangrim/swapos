@@ -1,5 +1,5 @@
 import { Box, Heading, Stack } from '@chakra-ui/react'
-import { RequestButton } from '@components/primitives/RequestButton'
+import { RequestButton } from '@components/home/RequestButton'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { FC } from 'react'
 
