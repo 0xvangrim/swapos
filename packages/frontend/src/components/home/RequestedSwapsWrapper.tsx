@@ -1,8 +1,11 @@
 import { Box, Heading } from '@chakra-ui/react'
-import { FC } from 'react'
+import { SwapOSStateProps } from '@components/types'
+import { FC, useContext } from 'react'
+import SwapOSContext from '../context/SwapOSContext'
 import { SwapCard } from '../primitives/SwapCard'
 
 export const RequestedSwapsWrapper: FC = () => {
+  const { swapOSState, _ }: any = useContext(SwapOSContext)
   return (
     <>
       <Box
@@ -26,13 +29,17 @@ export const RequestedSwapsWrapper: FC = () => {
           </Heading>
         </Box>
         <Box>
-          <SwapCard />
-          <SwapCard />
-          <SwapCard />
-          <SwapCard />
-          <SwapCard />
-          <SwapCard />
-          <SwapCard />
+          {swapOSState.map(
+            ({ amount, toChain, tokenIn, tokenOut }: SwapOSStateProps, index: number) => (
+              <SwapCard
+                key={index}
+                amount={amount}
+                toChain={toChain}
+                tokenIn={tokenIn}
+                tokenOut={tokenOut}
+              />
+            ),
+          )}
         </Box>
         <Box />
       </Box>

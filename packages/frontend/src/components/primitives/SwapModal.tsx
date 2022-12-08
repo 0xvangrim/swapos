@@ -22,7 +22,7 @@ import { useAccount } from 'wagmi'
 export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) => {
   const { address } = useAccount()
   const finalRef = useRef(null)
-  const { _, setSwapOSState }: any = useContext(SwapOSContext)
+  const { swapOSState, setSwapOSState }: any = useContext(SwapOSContext)
 
   const [amount, setAmount] = useState(0)
   const [toChain, setToChain] = useState('')
@@ -35,12 +35,15 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
   const handleTokenOutChange = (e: any) => setTokenOut(e?.target.value)
 
   const handleSubmitRequest = () => {
-    setSwapOSState({
-      amount,
-      toChain,
-      tokenIn,
-      tokenOut,
-    })
+    setSwapOSState([
+      ...swapOSState,
+      {
+        amount,
+        toChain,
+        tokenIn,
+        tokenOut,
+      },
+    ])
     onClose()
   }
 

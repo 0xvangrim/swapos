@@ -22,12 +22,7 @@ Router.events.on('routeChangeComplete', () => NProgress.done())
 Router.events.on('routeChangeError', () => NProgress.done())
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [swapOSState, setSwapOSState] = useState({
-    amount: 0,
-    toChain: '',
-    tokenIn: '',
-    tokenOut: '',
-  })
+  const [swapOSState, setSwapOSState] = useState([])
   return (
     <>
       <Head>
