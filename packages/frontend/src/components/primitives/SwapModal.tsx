@@ -14,13 +14,36 @@ import {
   Select,
   Text,
 } from '@chakra-ui/react'
-import { useRef } from 'react'
+import SwapOSContext from '@components/context/SwapOSContext'
+import { shortenAddress } from '@components/helpers/shortenAddress'
+import { useContext, useRef, useState } from 'react'
+import { useAccount } from 'wagmi'
 
 export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) => {
+  const { address } = useAccount()
   const finalRef = useRef(null)
+  const { _, setSwapOSState }: any = useContext(SwapOSContext)
+
+  const [amount, setAmount] = useState(0)
+  const [toChain, setToChain] = useState('')
+  const [tokenIn, setTokenIn] = useState('')
+  const [tokenOut, setTokenOut] = useState('')
+
+  const handleAmountChange = (e: any) => setAmount(e?.target.value)
+  const handleToChainChange = (e: any) => setToChain(e?.target.value)
+  const handleTokenInChange = (e: any) => setTokenIn(e?.target.value)
+  const handleTokenOutChange = (e: any) => setTokenOut(e?.target.value)
+
   const handleSubmitRequest = () => {
-    console.log('submit request')
+    setSwapOSState({
+      amount,
+      toChain,
+      tokenIn,
+      tokenOut,
+    })
+    onClose()
   }
+
   return (
     <>
       <Modal size={'sm'} finalFocusRef={finalRef} isOpen={isOpen} onClose={onClose} isCentered>
@@ -50,6 +73,7 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                 placeholder="Address"
                 bg={'#F3F2F2'}
                 borderRadius={'8px'}
+                value={shortenAddress(address)}
               />
               <Box display={'flex'} flexDir={'row'} justifyContent={'space-between'} mt={'16px'}>
                 <Box width={'150px'}>
@@ -60,6 +84,8 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     placeholder="Amount"
                     bg={'#F3F2F2'}
                     borderRadius={'8px'}
+                    value={amount}
+                    onChange={handleAmountChange}
                   />
                   <FormLabel mt={'16px'} textColor={'#666666'}>
                     To chain
@@ -70,9 +96,11 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     placeholder="Select chain"
                     bg={'#F3F2F2'}
                     borderRadius={'8px'}
+                    value={toChain}
+                    onChange={handleToChainChange}
                   >
-                    <option>Goerli</option>
-                    <option>Mumbai</option>
+                    <option>Goerli testnet</option>
+                    <option>Mumbai testnet</option>
                   </Select>
                 </Box>
                 <Box>
@@ -83,6 +111,8 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     placeholder="Choose token"
                     bg={'#F3F2F2'}
                     borderRadius={'8px'}
+                    value={tokenIn}
+                    onChange={handleTokenInChange}
                   >
                     <option>USDC</option>
                     <option>USDT</option>
@@ -96,6 +126,8 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     placeholder="Choose token"
                     bg={'#F3F2F2'}
                     borderRadius={'8px'}
+                    value={tokenOut}
+                    onChange={handleTokenOutChange}
                   >
                     <option>USDC</option>
                     <option>USDT</option>
@@ -116,6 +148,7 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                 gap={'10px'}
                 onClick={handleSubmitRequest}
                 width={'100%'}
+                type={'submit'}
               >
                 Submit Request
               </Button>

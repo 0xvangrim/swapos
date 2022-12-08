@@ -1,8 +1,11 @@
 import { Box, Button, Card, CardBody, Heading, Text } from '@chakra-ui/react'
-import { FC } from 'react'
+import { FC, useContext } from 'react'
 import { BsArrowRight } from 'react-icons/bs'
+import SwapOSContext from '../context/SwapOSContext'
 
 export const SwapCard: FC = () => {
+  const { swapOSState, setSwapOSState }: any = useContext(SwapOSContext)
+  console.log({ swapOSState })
   return (
     <>
       <Card backgroundColor={'#FFFFF'} borderRadius={'16px'} margin={'16px'}>
@@ -21,7 +24,7 @@ export const SwapCard: FC = () => {
           <Box width="250px" display={'flex'} justifyContent="space-between">
             <Box>
               <Heading size="xs" textTransform={'uppercase'}>
-                8200 USDC
+                {`${swapOSState.amount} ${swapOSState.tokenIn}`}
               </Heading>
               <Text pt="2" fontSize="sm" color={'#737373'}>
                 Goerli testnet
@@ -30,10 +33,10 @@ export const SwapCard: FC = () => {
             <BsArrowRight size={'30px'} color={'#E7E7E7'} />
             <Box>
               <Heading size="xs" textTransform={'uppercase'}>
-                8200 USDT
+                {`${swapOSState.amount} ${swapOSState.tokenOut}`}
               </Heading>
               <Text pt="2" fontSize="sm" color={'#737373'}>
-                Mumbai testnet
+                {swapOSState.toChain}
               </Text>
             </Box>
           </Box>

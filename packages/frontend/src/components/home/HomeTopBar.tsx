@@ -2,8 +2,11 @@ import { Box, Heading, Stack } from '@chakra-ui/react'
 import { RequestButton } from '@components/home/RequestButton'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { FC } from 'react'
+import { useAccount } from 'wagmi'
 
 export const HomeTopBar: FC = () => {
+  const { isConnected } = useAccount()
+
   return (
     <>
       <Box
@@ -21,7 +24,7 @@ export const HomeTopBar: FC = () => {
         </Heading>
         <Stack direction="row" spacing={4} align="center">
           <ConnectButton label="Connect" />
-          <RequestButton />
+          {isConnected && <RequestButton />}
         </Stack>
       </Box>
     </>

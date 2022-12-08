@@ -1,4 +1,5 @@
 import { ChakraProvider } from '@chakra-ui/react'
+import SwapOSContext from '@components/context/SwapOSContext'
 import { BaseLayout } from '@components/layout/BaseLayout'
 import { HotToastConfig } from '@components/layout/HotToastConfig'
 import { cache } from '@emotion/css'
@@ -11,6 +12,7 @@ import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import Router from 'next/router'
 import NProgress from 'nprogress'
+import { useState } from 'react'
 import { WagmiConfig } from 'wagmi'
 import theme from '../theme/theme'
 
@@ -20,6 +22,12 @@ Router.events.on('routeChangeComplete', () => NProgress.done())
 Router.events.on('routeChangeError', () => NProgress.done())
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const [swapOSState, setSwapOSState] = useState({
+    amount: 0,
+    toChain: '',
+    tokenIn: '',
+    tokenOut: '',
+  })
   return (
     <>
       <Head>
@@ -37,7 +45,9 @@ function MyApp({ Component, pageProps }: AppProps) {
               coolMode={true}
             >
               <BaseLayout>
-                <Component {...pageProps} />
+                <SwapOSContext.Provider value={{ swapOSState, setSwapOSState }}>
+                  <Component {...pageProps} />
+                </SwapOSContext.Provider>
               </BaseLayout>
             </RainbowKitProvider>
           </WagmiConfig>
