@@ -90,6 +90,7 @@ importers:
       '@emotion/react': ^11.10.5
       '@emotion/server': ^11.10.0
       '@emotion/styled': ^11.10.5
+      '@ethathon/contracts': workspace:*
       '@ethersproject/abi': ^5.7.0
       '@ethersproject/providers': ^5.7.2
       '@rainbow-me/rainbowkit': ^0.8.0
@@ -100,7 +101,6 @@ importers:
       '@types/react': ^18.0.25
       '@typescript-eslint/eslint-plugin': ^5.43.0
       '@typescript-eslint/parser': ^5.43.0
-      add: ^2.0.6
       babel-loader: ^9.1.0
       babel-plugin-macros: ^3.1.0
       eslint: ^8.27.0
@@ -131,8 +131,8 @@ importers:
       '@emotion/react': 11.10.5_cuziicjcvwawlf5iuhzacuhqcy
       '@emotion/server': 11.10.0_@emotion+css@11.10.5
       '@emotion/styled': 11.10.5_hmjty4frusbltjhl3xd7udcm2y
+      '@ethathon/contracts': link:../contracts
       '@rainbow-me/rainbowkit': 0.8.0_34cjc2jjasoiqsg4jltjjgnhi4
-      add: 2.0.6
       ethers: 5.7.2
       framer-motion: 6.5.1_biqbaboplfbrettd7655fr4n2y
       next: 13.0.4_22zznl4krlnhaprkt2jq37lyte
@@ -5138,10 +5138,6 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
     dev: true
-
-  /add/2.0.6:
-    resolution: {integrity: sha512-j5QzrmsokwWWp6kUcJQySpbG+xfOBqqKnup3OIk1pz+kB/80SLorZ9V8zHFLO92Lcd+hbvq8bT+zOGoPkmBV0Q==}
-    dev: false
 
   /address/1.2.1:
     resolution: {integrity: sha512-B+6bi5D34+fDYENiH5qOlA0cV2rAGKuWZ9LeyUUehbXy8e0VS9e498yO0Jeeh+iM+6KbfudHTFjXw2MmJD4QRA==}
