@@ -2,7 +2,14 @@ import { Box, Button, Card, CardBody, Heading, Text } from '@chakra-ui/react'
 import { FC } from 'react'
 import { BsArrowRight } from 'react-icons/bs'
 
-export const SwapCard: FC = ({ amount, toChain, tokenIn, tokenOut }: any) => {
+interface SwapCardProps {
+  amount: number
+  toChain: string
+  tokenIn: string
+  tokenOut: string
+}
+
+export const SwapCard: FC<SwapCardProps> = ({ amount, toChain, tokenIn, tokenOut }) => {
   console.log({ amount, toChain, tokenIn, tokenOut })
   return (
     <>
