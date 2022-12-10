@@ -14,9 +14,8 @@
     "lint:fix": "prettier . --write && pnpm eslint --fix",
     "eslint": "eslint . --ext .js,.ts",
     "solhint": "solhint 'contracts/**/*.sol'",
-    "deploy": "pnpm ts-node ./deploy/deploy.ts",
-    "verify:mumbai": "source .env && pnpm hardhat etherscan-verify --network mumbai --api-key $POLYGONSCAN_API_KEY",
-    "verify:goerli": "pnpm hardhat etherscan-verify --network goerli"
+    "deploy": "pnpm ts-node ./deploy/deploy-local.ts",
+    "deploy:testnet": "pnpm ts-node ./deploy/deploy.ts"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
