@@ -15,12 +15,12 @@ export const RequestedSwapsWrapper: FC = () => {
         flexDir={'column'}
         alignItems={'center'}
         backgroundColor={'#F9F9F9'}
-        paddingTop={'32px'}
+        padding={'16px'}
       >
-        <Box>
+        <Box marginTop={'16px'} marginBottom={'16px'}>
           <Heading
             fontSize={'24px'}
-            color={'#9C9C9C'}
+            color={'#C5C5C5'}
             fontStyle={'normal'}
             lineHeight={'26px'}
             fontWeight={500}

@@ -17,10 +17,10 @@ export const HomeTopBar: FC = () => {
         alignItems={'center'}
         mt={0}
         bg={'rgba(255, 255, 255, 0.5)'}
-        borderBottom={'1px solid #E1E1E1'}
+        borderBottom={'1px solid #E5E5E5'}
       >
         <Heading as="h1" size="lg" lineHeight={'26px'} fontWeight={500}>
-          SwapOS
+          <b>Swap</b>OS
         </Heading>
         <Stack direction="row" spacing={4} align="center">
           <ConnectButton label="Connect" />

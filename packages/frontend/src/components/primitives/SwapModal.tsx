@@ -52,35 +52,41 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
       <Modal size={'sm'} finalFocusRef={finalRef} isOpen={isOpen} onClose={onClose} isCentered>
         <ModalOverlay />
         <ModalContent>
-          <Box padding={'16px'} gap={'8px'}>
-            <ModalHeader textAlign={'center'}>Request to swap</ModalHeader>
+          <Box padding={'16px'}>
+            <ModalHeader textAlign={'center'} padding={'0px'} mb={'8px'}>
+              Request to swap
+            </ModalHeader>
             <Text
               textAlign={'center'}
-              fontSize={'12px'}
+              fontSize={'14px'}
               textColor={'#666666'}
-              lineHeight={'13px'}
+              lineHeight={'inherit'}
               fontWeight={400}
             >
-              Trustless peer-to-peer request for swapping tokens cross-chain via Hyperlane
+              Peer-to-peer request to swap tokens cross-chain in a trustless fashion via Hyperlane.
             </Text>
           </Box>
           <Divider />
 
           <ModalBody textAlign={'center'} padding={'16px'} gap={'16px'}>
             <FormControl>
-              <FormLabel textColor={'#666666'}>From account</FormLabel>
+              <FormLabel fontSize={'14px'} textColor={'#666666'}>
+                From account
+              </FormLabel>
               <Input
                 size={'sm'}
                 disabled
                 variant={'filled'}
                 placeholder="Address"
-                bg={'#F3F2F2'}
+                bg={'#E2E8F0'}
                 borderRadius={'8px'}
                 value={shortenAddress(address)}
               />
               <Box display={'flex'} flexDir={'row'} justifyContent={'space-between'} mt={'16px'}>
-                <Box width={'150px'}>
-                  <FormLabel textColor={'#666666'}>Amount</FormLabel>
+                <Box>
+                  <FormLabel fontSize={'14px'} textColor={'#666666'}>
+                    Amount
+                  </FormLabel>
                   <Input
                     size={'sm'}
                     variant={'filled'}
@@ -90,7 +96,7 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     value={amount}
                     onChange={handleAmountChange}
                   />
-                  <FormLabel mt={'16px'} textColor={'#666666'}>
+                  <FormLabel fontSize={'14px'} mt={'16px'} textColor={'#666666'}>
                     To chain
                   </FormLabel>
                   <Select
@@ -107,7 +113,9 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                   </Select>
                 </Box>
                 <Box>
-                  <FormLabel textColor={'#666666'}>Token in</FormLabel>
+                  <FormLabel fontSize={'14px'} textColor={'#666666'}>
+                    Token in
+                  </FormLabel>
                   <Select
                     size={'sm'}
                     variant={'filled'}
@@ -120,7 +128,7 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     <option>USDC</option>
                     <option>USDT</option>
                   </Select>
-                  <FormLabel mt={'16px'} textColor={'#666666'}>
+                  <FormLabel fontSize={'14px'} mt={'16px'} textColor={'#666666'}>
                     Token out
                   </FormLabel>
                   <Select
@@ -141,7 +149,7 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
           </ModalBody>
           <Divider />
           <ModalFooter>
-            <Box display={'flex'} flexDir={'column'}>
+            <Box display={'flex'} width={'100%'} flexDir={'column'}>
               <Button
                 bg={'black'}
                 textColor={'white'}
@@ -152,11 +160,12 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                 onClick={handleSubmitRequest}
                 width={'100%'}
                 type={'submit'}
+                marginBottom={'8px'}
               >
                 Submit Request
               </Button>
               <Text textAlign={'center'} textColor={'#666666'} fontSize={'12px'}>
-                Request can be revoked anytime and will only execute if the set conditions are met.
+                Request will only execute if conditions are met.
               </Text>
             </Box>
           </ModalFooter>
