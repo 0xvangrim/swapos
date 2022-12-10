@@ -12,7 +12,7 @@ export const RequestButton: FC = () => {
         bg="#000000"
         textColor={'white'}
         onClick={onOpen}
-        borderRadius={'8px'}
+        borderRadius={'12px'}
         padding={'8px 16px'}
       >
         New Request

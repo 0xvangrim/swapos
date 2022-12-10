@@ -5,11 +5,19 @@ const Fonts = () => (
     styles={`
         /* latin */
         @font-face {
-          font-family: 'Graphik Bold';
+          font-family: 'Graphik';
           font-style: normal;
-          font-weight: 700;
+          font-weight: 400;
           font-display: swap;
-          src: url('./fonts/Graphik-Bold.otf') format('otf'), url('./fonts/Graphik-Bold.otf') format('otf');
+          src: url('./fonts/GraphikRegular.otf') format('otf'), url('./fonts/GraphikRegular.otf') format('otf');
+        }
+
+        @font-face {
+          font-family: 'Graphik Medium';
+          font-style: normal;
+          font-weight: 500;
+          font-display: swap;
+          src: url('./fonts/GraphikMedium.otf') format('otf'), url('./fonts/GraphikMedium.otf') format('otf');
         }
         `}
   />
