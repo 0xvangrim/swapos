@@ -13,7 +13,7 @@ export const SwapCard: FC<SwapCardProps> = ({ amount, toChain, tokenIn, tokenOut
   console.log({ amount, toChain, tokenIn, tokenOut })
   return (
     <>
-      <Card backgroundColor={'#FFFFF'} borderRadius={'16px'} margin={'16px'}>
+      <Card backgroundColor={'#FFFFF'} borderRadius={'16px'} marginBottom={'16px'}>
         <CardBody
           width={'502px'}
           height={'70px'}
@@ -25,6 +25,7 @@ export const SwapCard: FC<SwapCardProps> = ({ amount, toChain, tokenIn, tokenOut
           padding={'16px'}
           gap={'16px'}
           borderRadius={'16px'}
+          border={'1px solid #E5E5E5'}
         >
           <Box width="250px" display={'flex'} justifyContent="space-between">
             <Box>
