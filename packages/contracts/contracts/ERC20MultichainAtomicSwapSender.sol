@@ -239,6 +239,10 @@ htlcId = _getHtlcId(
   function haveHTLC(bytes32 _htlcId) internal view returns (bool exists) {
     exists = (htlcs[_htlcId].sender != address(0));
   }
+
+  function getDomain() public view returns (uint32 _senderDomain) {
+    _senderDomain = senderDomain;
+  }
   
   function _handle(
     uint32 origin,

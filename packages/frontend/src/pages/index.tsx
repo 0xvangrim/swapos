@@ -4,12 +4,7 @@ import type { NextPage } from 'next'
 import 'twin.macro'
 
 const HomePage: NextPage = () => {
-  return (
-    <>
-      <HomeTopBar />
-      <RequestedSwapsWrapper />
-    </>
-  )
+  return <RequestedSwapsWrapper />
 }
 
 export default HomePage

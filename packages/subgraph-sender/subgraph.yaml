@@ -1,0 +1,27 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ERC20MultichainAtomicSwapSender
+    network: mumbai
+    source:
+      address: "0x3bdd5cbdF72ab0218aff51cA992C80727cbC83d7"
+      abi: ERC20MultichainAtomicSwapSender
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - HTLCERC20
+      abis:
+        - name: ERC20MultichainAtomicSwapSender
+          file: ./abis/ERC20MultichainAtomicSwapSender.json
+      eventHandlers:
+        - event: HTLCERC20Created(indexed bytes32,indexed address,address,address,uint32)
+          handler: handleHTLCERC20Created
+        - event: HTLCERC20Refunded(indexed bytes32)
+          handler: handleHTLCERC20Refunded
+        - event: HTLCERC20Withdrawn(indexed bytes32)
+          handler: handleHTLCERC20Withdrawn
+      file: ./src/Sender.ts

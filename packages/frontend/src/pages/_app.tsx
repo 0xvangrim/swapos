@@ -1,5 +1,6 @@
 import { ChakraProvider } from '@chakra-ui/react'
 import SwapOSContext from '@components/context/SwapOSContext'
+import { HomeTopBar } from '@components/home/HomeTopBar'
 import { BaseLayout } from '@components/layout/BaseLayout'
 import { HotToastConfig } from '@components/layout/HotToastConfig'
 import { cache } from '@emotion/css'
@@ -41,6 +42,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             >
               <BaseLayout>
                 <SwapOSContext.Provider value={{ swapOSState, setSwapOSState }}>
+                  <HomeTopBar />
                   <Component {...pageProps} />
                 </SwapOSContext.Provider>
               </BaseLayout>

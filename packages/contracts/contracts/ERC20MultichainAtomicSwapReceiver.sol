@@ -166,6 +166,10 @@ contract ERC20MultichainAtomicSwapReceiver is Router {
     exists = (htlcs[_htlcId].sender != address(0));
   }
 
+  function getDomain() public view returns (uint32 _receiverDomain) {
+    _receiverDomain = receiverDomain;
+  }
+
   function _handle(
     uint32,
     bytes32,

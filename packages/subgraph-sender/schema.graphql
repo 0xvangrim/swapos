@@ -1,0 +1,31 @@
+enum HTLCSendStatus {
+  PENDING,
+  COMPLETED,
+  REFUNDED
+}
+
+# enum HTLCWithdrawalStatus {
+#   INITIATED,
+#   COMPLETED,
+#   REFUNDED
+# }
+
+type HTLCERC20 @entity(immutable: true) {
+  id: ID!
+
+  sender: Bytes!
+  senderDomain: BigInt!
+  senderToken: Bytes!
+  senderAmount: BigInt!
+
+  receiver: Bytes
+  receiverDomain: BigInt!
+  receiverToken: Bytes!
+  receiverAmount: BigInt!
+
+  createdAt: BigInt!
+  timelock: BigInt!
+
+  sendStatus: HTLCSendStatus!
+  # withdrawalStatus: HTLCWithdrawalStatus!
+}

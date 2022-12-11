@@ -16,6 +16,7 @@ import {
 } from '@chakra-ui/react'
 import SwapOSContext from '@components/context/SwapOSContext'
 import { shortenAddress } from '@components/helpers/shortenAddress'
+import { useTokens } from '@shared/useTokens'
 import { useContext, useRef, useState } from 'react'
 import { useAccount } from 'wagmi'
 
@@ -28,6 +29,9 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
   const [toChain, setToChain] = useState('')
   const [tokenIn, setTokenIn] = useState('')
   const [tokenOut, setTokenOut] = useState('')
+
+  const { tokens: sentTokensList } = useTokens()
+  const { tokens: receivedTokensList } = useTokens()
 
   const handleAmountChange = (e: any) => setAmount(e?.target.value)
   const handleToChainChange = (e: any) => setToChain(e?.target.value)
@@ -80,7 +84,7 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                 placeholder="Address"
                 bg={'#E2E8F0'}
                 borderRadius={'8px'}
-                value={shortenAddress(address)}
+                value={address ? shortenAddress(address) : ''}
               />
               <Box display={'flex'} flexDir={'row'} justifyContent={'space-between'} mt={'16px'}>
                 <Box>
@@ -125,8 +129,9 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     value={tokenIn}
                     onChange={handleTokenInChange}
                   >
-                    <option>USDC</option>
-                    <option>USDT</option>
+                    {sentTokensList.map((token) => (
+                      <option key={token.address}>USDC</option>
+                    ))}
                   </Select>
                   <FormLabel fontSize={'14px'} mt={'16px'} textColor={'#666666'}>
                     Token out
@@ -140,8 +145,9 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     value={tokenOut}
                     onChange={handleTokenOutChange}
                   >
-                    <option>USDC</option>
-                    <option>USDT</option>
+                    {receivedTokensList.map((token) => (
+                      <option key={token.address}>USDC</option>
+                    ))}
                   </Select>
                 </Box>
               </Box>
