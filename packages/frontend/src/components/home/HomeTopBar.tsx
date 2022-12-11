@@ -24,7 +24,7 @@ export const HomeTopBar: FC = () => {
         </Heading>
         <Stack direction="row" spacing={4} align="center">
           <ConnectButton label="Connect" />
-          <RequestButton />
+          {isConnected && <RequestButton />}
         </Stack>
       </Box>
     </>
