@@ -16,7 +16,7 @@ dataSources:
         - HTLCERC20
       abis:
         - name: ERC20MultichainAtomicSwapSender
-          file: ./abis/ERC20MultichainAtomicSwapSender.json
+          file: ../contracts/artifacts/contracts/ERC20MultichainAtomicSwapSender.sol/ERC20MultichainAtomicSwapSender.json
       eventHandlers:
         - event: HTLCERC20Created(indexed bytes32,indexed address,address,address,uint32)
           handler: handleHTLCERC20Created
