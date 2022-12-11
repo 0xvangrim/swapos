@@ -28,13 +28,13 @@ function MyApp({ Component, pageProps }: AppProps) {
       amount: 100,
       toChain: 'Ethereum Mainnet',
       tokenIn: 'LUSD',
-      tokenOut: 'LUSD',
+      tokenOut: 'USDT',
     },
     {
       amount: 3000,
       toChain: 'Optimism',
       tokenIn: 'sUSD',
-      tokenOut: 'sUSD',
+      tokenOut: 'USDC',
     },
   ])
   return (
