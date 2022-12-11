@@ -1,31 +1,21 @@
 import { Box, Heading } from '@chakra-ui/react'
 import { FC, useEffect } from 'react'
 import { SwapCard } from '../primitives/SwapCard'
-import { execute, HTLCERC20 } from '../../../.graphclient'
+import { execute, GetAllHTLCsDocument, HTLCERC20 } from '../../../.graphclient'
 import gql from 'graphql-tag'
 import { useState } from 'react'
 import { useAccount } from 'wagmi'
+import { useQuery } from 'urql'
 
 export const RequestedSwapsWrapper: FC = () => {
   const { isConnected } = useAccount()
-  const [htlcs, setHtlcs] = useState<HTLCERC20[]>([])
+  const [result, reexecuteQuery] = useQuery({
+    query: GetAllHTLCsDocument,
+  })
+  const { data, fetching, error } = result
+  const htlcs: HTLCERC20[] = data?.htlcerc20S
 
-  useEffect(() => {
-    execute(gql`
-      query {
-        htlcerc20S {
-          id
-          senderAmount
-          senderDomain
-          senderToken
-          receiverAmount
-          receiverToken
-          receiverDomain
-          sendStatus
-        }
-      }
-    `).then((result: any) => setHtlcs(result?.data?.htlcerc20S))
-  }, [])
+  console.log({ htlcs })
 
   return (
     <>

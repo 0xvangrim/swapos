@@ -4,3 +4,13 @@ sources:
     handler:
       graphql:
         endpoint: https://api.thegraph.com/subgraphs/name/mprasanjith/swapos-polygon-mumbai
+    transforms:
+      - blockTracking:
+          validateSchema: true
+
+plugins:
+  - pollingLive:
+      defaultInterval: 1000
+
+documents:
+  - ./src/queries/getAll.graphql

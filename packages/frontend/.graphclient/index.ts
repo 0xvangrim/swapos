@@ -6,6 +6,9 @@ import {
   GraphQLScalarType,
   GraphQLScalarTypeConfig,
 } from 'graphql'
+import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core'
+import { gql } from '@graphql-mesh/utils'
+
 import type { GetMeshOptions } from '@graphql-mesh/runtime'
 import type { YamlConfig } from '@graphql-mesh/types'
 import { PubSub } from '@graphql-mesh/utils'
@@ -16,7 +19,10 @@ import { fetch as fetchFn } from '@whatwg-node/fetch'
 import { MeshResolvedSource } from '@graphql-mesh/runtime'
 import { MeshTransform, MeshPlugin } from '@graphql-mesh/types'
 import GraphqlHandler from '@graphql-mesh/graphql'
+import UsePollingLive from '@graphprotocol/client-polling-live'
+import BlockTrackingTransform from '@graphprotocol/client-block-tracking'
 import BareMerger from '@graphql-mesh/merger-bare'
+import { printWithCache } from '@graphql-mesh/utils'
 import { createMeshHTTPHandler, MeshHTTPHandler } from '@graphql-mesh/http'
 import {
   getMesh,
@@ -624,6 +630,25 @@ export async function getMeshOptions(): Promise<GetMeshOptions> {
     logger: logger.child('swapos-polygon-mumbai'),
     importFn,
   })
+  additionalEnvelopPlugins[0] = await UsePollingLive({
+    ...{
+      defaultInterval: 1000,
+    },
+    logger: logger.child('pollingLive'),
+    cache,
+    pubsub,
+    baseDir,
+    importFn,
+  })
+  swaposPolygonMumbaiTransforms[0] = new BlockTrackingTransform({
+    apiName: 'swapos-polygon-mumbai',
+    config: { validateSchema: true },
+    baseDir,
+    cache,
+    pubsub,
+    importFn,
+    logger,
+  })
   sources[0] = {
     name: 'swapos-polygon-mumbai',
     handler: swaposPolygonMumbaiHandler,
@@ -648,7 +673,15 @@ export async function getMeshOptions(): Promise<GetMeshOptions> {
     logger,
     additionalEnvelopPlugins,
     get documents() {
-      return []
+      return [
+        {
+          document: GetAllHtlCsDocument,
+          get rawSDL() {
+            return printWithCache(GetAllHtlCsDocument)
+          },
+          location: 'GetAllHtlCsDocument.graphql',
+        },
+      ]
     },
     fetchFn,
   }
@@ -684,3 +717,68 @@ export const execute: ExecuteMeshFn = (...args) =>
 
 export const subscribe: SubscribeMeshFn = (...args) =>
   getBuiltGraphClient().then(({ subscribe }) => subscribe(...args))
+export function getBuiltGraphSDK<TGlobalContext = any, TOperationContext = any>(
+  globalContext?: TGlobalContext,
+) {
+  const sdkRequester$ = getBuiltGraphClient().then(({ sdkRequesterFactory }) =>
+    sdkRequesterFactory(globalContext),
+  )
+  return getSdk<TOperationContext, TGlobalContext>((...args) =>
+    sdkRequester$.then((sdkRequester) => sdkRequester(...args)),
+  )
+}
+export type GetAllHTLCsQueryVariables = Exact<{ [key: string]: never }>
+
+export type GetAllHTLCsQuery = {
+  htlcerc20S: Array<
+    Pick<
+      HTLCERC20,
+      | 'id'
+      | 'sender'
+      | 'senderAmount'
+      | 'senderDomain'
+      | 'senderToken'
+      | 'receiverDomain'
+      | 'receiverAmount'
+      | 'receiverToken'
+      | 'sendStatus'
+    >
+  >
+}
+
+export const GetAllHTLCsDocument = gql`
+  query GetAllHTLCs @live {
+    htlcerc20S(orderBy: createdAt, orderDirection: desc) {
+      id
+      sender
+      senderAmount
+      senderDomain
+      senderToken
+      receiverDomain
+      receiverAmount
+      receiverToken
+      sendStatus
+    }
+  }
+` as unknown as DocumentNode<GetAllHTLCsQuery, GetAllHTLCsQueryVariables>
+
+export type Requester<C = {}, E = unknown> = <R, V>(
+  doc: DocumentNode,
+  vars?: V,
+  options?: C,
+) => Promise<R> | AsyncIterable<R>
+export function getSdk<C, E>(requester: Requester<C, E>) {
+  return {
+    GetAllHTLCs(
+      variables?: GetAllHTLCsQueryVariables,
+      options?: C,
+    ): AsyncIterable<GetAllHTLCsQuery> {
+      return requester<GetAllHTLCsQuery, GetAllHTLCsQueryVariables>(
+        GetAllHTLCsDocument,
+        variables,
+        options,
+      ) as AsyncIterable<GetAllHTLCsQuery>
+    },
+  }
+}
+export type Sdk = ReturnType<typeof getSdk>

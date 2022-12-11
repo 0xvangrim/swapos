@@ -13,53 +13,49 @@ import Head from 'next/head'
 import Router from 'next/router'
 import NProgress from 'nprogress'
 import { useState } from 'react'
+import { createClient, Provider as URQLProvider } from 'urql'
 import { WagmiConfig } from 'wagmi'
+import { graphExchange } from '@graphprotocol/client-urql'
 import theme from '../theme/theme'
+import * as GraphClient from '../../.graphclient'
 
 // Router Loading Animation with @tanem/react-nprogress
 Router.events.on('routeChangeStart', () => NProgress.start())
 Router.events.on('routeChangeComplete', () => NProgress.done())
 Router.events.on('routeChangeError', () => NProgress.done())
 
+const client = createClient({
+  url: 'http://localhost:4000/graphql',
+  exchanges: [graphExchange(GraphClient) as any],
+})
+
 function MyApp({ Component, pageProps }: AppProps) {
-  const [swapOSState, setSwapOSState] = useState([
-    {
-      amount: 100,
-      toChain: 'Ethereum Mainnet',
-      tokenIn: 'LUSD',
-      tokenOut: 'USDT',
-    },
-    {
-      amount: 3000,
-      toChain: 'Optimism',
-      tokenIn: 'sUSD',
-      tokenOut: 'USDC',
-    },
-  ])
   return (
     <>
       <Head>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <CacheProvider value={cache}>
-        <ChakraProvider theme={theme}>
-          <GlobalStyles />
-          <WagmiConfig client={wagmiClient}>
-            <RainbowKitProvider
-              chains={chains}
-              theme={darkTheme({
-                accentColor: 'black',
-              })}
-              coolMode={true}
-            >
-              <BaseLayout>
-                <HomeTopBar />
-                <Component {...pageProps} />
-              </BaseLayout>
-            </RainbowKitProvider>
-          </WagmiConfig>
-          <HotToastConfig />
-        </ChakraProvider>
+        <URQLProvider value={client}>
+          <ChakraProvider theme={theme}>
+            <GlobalStyles />
+            <WagmiConfig client={wagmiClient}>
+              <RainbowKitProvider
+                chains={chains}
+                theme={darkTheme({
+                  accentColor: 'black',
+                })}
+                coolMode={true}
+              >
+                <BaseLayout>
+                  <HomeTopBar />
+                  <Component {...pageProps} />
+                </BaseLayout>
+              </RainbowKitProvider>
+            </WagmiConfig>
+            <HotToastConfig />
+          </ChakraProvider>
+        </URQLProvider>
       </CacheProvider>
     </>
   )
