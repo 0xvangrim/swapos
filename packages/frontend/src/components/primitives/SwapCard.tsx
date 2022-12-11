@@ -1,17 +1,31 @@
 import { Box, Button, Card, CardBody, Heading, Text } from '@chakra-ui/react'
 import { FC } from 'react'
 import { BsArrowRight } from 'react-icons/bs'
-import { useNetwork, useToken } from 'wagmi'
+import { useAccount, useNetwork, useToken } from 'wagmi'
 import { HTLCERC20 } from '../../../.graphclient'
 import { domainIdToChainId } from '@config/chains'
 import { useMemo } from 'react'
 import { utils } from 'ethers'
+import { fromUnixTime, isAfter, isBefore } from 'date-fns'
 
 interface SwapCardProps {
   htlc: HTLCERC20
+  invert?: boolean
 }
 
-export const SwapCard: FC<SwapCardProps> = ({ htlc }) => {
+export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
+  const { address: ownAddress } = useAccount()
+  const { chain } = useNetwork()
+
+  const isSender = useMemo(
+    () => ownAddress?.toLowerCase() === htlc.sender?.toLowerCase(),
+    [htlc, ownAddress],
+  )
+  const isReceiver = useMemo(
+    () => ownAddress?.toLowerCase() === htlc.receiver?.toLowerCase(),
+    [htlc, ownAddress],
+  )
+
   const senderChainId = useMemo(() => domainIdToChainId[htlc.senderDomain], [htlc.senderDomain])
   const receiverChainId = useMemo(
     () => domainIdToChainId[htlc.receiverDomain],
@@ -38,14 +52,31 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc }) => {
   )
 
   const senderAmountFormatted = useMemo(
-    () => utils.formatUnits(htlc.senderAmount, senderToken?.decimals),
+    () => (senderToken ? utils.formatUnits(htlc?.senderAmount, senderToken?.decimals) : ''),
     [htlc.senderAmount, senderToken],
   )
 
   const receiverAmountFormatted = useMemo(
-    () => utils.formatUnits(htlc.receiverAmount, receiverToken?.decimals),
+    () => (receiverToken ? utils.formatUnits(htlc?.receiverAmount, receiverToken?.decimals) : ''),
     [htlc.receiverAmount, receiverToken],
   )
+
+  const isSenderChain = useMemo(() => chain?.id === senderChainId, [chain, senderChainId])
+  const isReceiverChain = useMemo(() => chain?.id === receiverChainId, [chain, receiverChainId])
+
+  const isExpired = useMemo(() => isAfter(new Date(), fromUnixTime(htlc.timelock)), [htlc])
+  const isWithdrawable = useMemo(
+    () => !(isSender || isReceiver || isExpired),
+    [isSender, isReceiver, isExpired, htlc],
+  )
+  const isRefundable = useMemo(
+    () => (isSender || isReceiver) && isExpired,
+    [isSender, isReceiver, isExpired, htlc],
+  )
+
+  function capitalize(string: string) {
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
+  }
 
   return (
     <Card backgroundColor={'#FFFFF'} borderRadius={'16px'} marginBottom={'16px'}>
@@ -65,30 +96,61 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc }) => {
         <Box width="250px" display={'flex'} justifyContent="space-between">
           <Box>
             <Heading size="xs" textTransform={'uppercase'}>
-              {`${senderAmountFormatted} ${senderToken?.symbol}`}
+              {invert
+                ? `${receiverAmountFormatted} ${receiverToken?.symbol}`
+                : `${senderAmountFormatted} ${senderToken?.symbol}`}
             </Heading>
             <Text pt="2" fontSize="sm" color={'#737373'}>
-              {senderChain?.name}
+              {invert ? receiverChain?.name : senderChain?.name}
             </Text>
           </Box>
           <BsArrowRight size={'30px'} color={'#E7E7E7'} />
           <Box>
             <Heading size="xs" textTransform={'uppercase'}>
-              {`${receiverAmountFormatted} ${receiverToken?.symbol}`}
+              {invert
+                ? `${senderAmountFormatted} ${senderToken?.symbol}`
+                : `${receiverAmountFormatted} ${receiverToken?.symbol}`}
             </Heading>
             <Text pt="2" fontSize="sm" color={'#737373'}>
-              {receiverChain?.name}
+              {invert ? senderChain?.name : receiverChain?.name}
             </Text>
           </Box>
         </Box>
-        <Button
-          colorScheme="blackAlpha"
-          variant={'ghost'}
-          color={'black'}
-          border={'1px solid #E5E5E5'}
-        >
-          Accept
-        </Button>
+        {!isWithdrawable && !isRefundable && (
+          <Box
+            display="flex"
+            alignItems="center"
+            fontWeight="semibold"
+            minWidth="10"
+            minHeight="10"
+            paddingInlineStart="4"
+            paddingInlineEnd="4"
+            color={'black'}
+          >
+            {isExpired ? 'Expired' : capitalize(htlc.sendStatus)}
+          </Box>
+        )}
+
+        {isWithdrawable && (
+          <Button
+            colorScheme="blackAlpha"
+            variant={'ghost'}
+            color={'black'}
+            border={'1px solid #E5E5E5'}
+          >
+            Accept
+          </Button>
+        )}
+        {isRefundable && (
+          <Button
+            colorScheme="blackAlpha"
+            variant={'ghost'}
+            color={'black'}
+            border={'1px solid #E5E5E5'}
+          >
+            Refund
+          </Button>
+        )}
       </CardBody>
     </Card>
   )

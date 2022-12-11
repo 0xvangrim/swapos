@@ -6,9 +6,6 @@ import {
   GraphQLScalarType,
   GraphQLScalarTypeConfig,
 } from 'graphql'
-import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core'
-import { gql } from '@graphql-mesh/utils'
-
 import type { GetMeshOptions } from '@graphql-mesh/runtime'
 import type { YamlConfig } from '@graphql-mesh/types'
 import { PubSub } from '@graphql-mesh/utils'
@@ -19,10 +16,10 @@ import { fetch as fetchFn } from '@whatwg-node/fetch'
 import { MeshResolvedSource } from '@graphql-mesh/runtime'
 import { MeshTransform, MeshPlugin } from '@graphql-mesh/types'
 import GraphqlHandler from '@graphql-mesh/graphql'
+import EncapsulateTransform from '@graphql-mesh/transform-encapsulate'
 import UsePollingLive from '@graphprotocol/client-polling-live'
 import BlockTrackingTransform from '@graphprotocol/client-block-tracking'
-import BareMerger from '@graphql-mesh/merger-bare'
-import { printWithCache } from '@graphql-mesh/utils'
+import StitchingMerger from '@graphql-mesh/merger-stitching'
 import { createMeshHTTPHandler, MeshHTTPHandler } from '@graphql-mesh/http'
 import {
   getMesh,
@@ -34,7 +31,8 @@ import {
 import { MeshStore, FsStoreStorageAdapter } from '@graphql-mesh/store'
 import { path as pathModule } from '@graphql-mesh/cross-helpers'
 import { ImportFn } from '@graphql-mesh/types'
-import type { SwaposPolygonMumbaiTypes } from './sources/swapos-polygon-mumbai/types'
+import type { MaticmumTypes } from './sources/maticmum/types'
+import type { FujiTypes } from './sources/fuji/types'
 export type Maybe<T> = T | null
 export type InputMaybe<T> = Maybe<T>
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] }
@@ -52,6 +50,16 @@ export type Scalars = {
   BigDecimal: any
   BigInt: any
   Bytes: any
+}
+
+export type Query = {
+  maticmum: maticmumQuery
+  fuji: fujiQuery
+}
+
+export type Subscription = {
+  maticmum: maticmumSubscription
+  fuji: fujiSubscription
 }
 
 export type BlockChangedFilter = {
@@ -187,60 +195,6 @@ export type HTLCSendStatus = 'PENDING' | 'COMPLETED' | 'REFUNDED'
 /** Defines the order direction, either ascending or descending */
 export type OrderDirection = 'asc' | 'desc'
 
-export type Query = {
-  htlcerc20?: Maybe<HTLCERC20>
-  htlcerc20S: Array<HTLCERC20>
-  /** Access to subgraph metadata */
-  _meta?: Maybe<_Meta_>
-}
-
-export type Queryhtlcerc20Args = {
-  id: Scalars['ID']
-  block?: InputMaybe<Block_height>
-  subgraphError?: _SubgraphErrorPolicy_
-}
-
-export type Queryhtlcerc20SArgs = {
-  skip?: InputMaybe<Scalars['Int']>
-  first?: InputMaybe<Scalars['Int']>
-  orderBy?: InputMaybe<HTLCERC20_orderBy>
-  orderDirection?: InputMaybe<OrderDirection>
-  where?: InputMaybe<HTLCERC20_filter>
-  block?: InputMaybe<Block_height>
-  subgraphError?: _SubgraphErrorPolicy_
-}
-
-export type Query_metaArgs = {
-  block?: InputMaybe<Block_height>
-}
-
-export type Subscription = {
-  htlcerc20?: Maybe<HTLCERC20>
-  htlcerc20S: Array<HTLCERC20>
-  /** Access to subgraph metadata */
-  _meta?: Maybe<_Meta_>
-}
-
-export type Subscriptionhtlcerc20Args = {
-  id: Scalars['ID']
-  block?: InputMaybe<Block_height>
-  subgraphError?: _SubgraphErrorPolicy_
-}
-
-export type Subscriptionhtlcerc20SArgs = {
-  skip?: InputMaybe<Scalars['Int']>
-  first?: InputMaybe<Scalars['Int']>
-  orderBy?: InputMaybe<HTLCERC20_orderBy>
-  orderDirection?: InputMaybe<OrderDirection>
-  where?: InputMaybe<HTLCERC20_filter>
-  block?: InputMaybe<Block_height>
-  subgraphError?: _SubgraphErrorPolicy_
-}
-
-export type Subscription_metaArgs = {
-  block?: InputMaybe<Block_height>
-}
-
 export type _Block_ = {
   /** The hash of the block */
   hash?: Maybe<Scalars['Bytes']>
@@ -271,6 +225,114 @@ export type _SubgraphErrorPolicy_ =
   | 'allow'
   /** If the subgraph has indexing errors, data will be omitted. The default. */
   | 'deny'
+
+export type maticmumQuery = {
+  htlcerc20?: Maybe<HTLCERC20>
+  htlcerc20S: Array<HTLCERC20>
+  /** Access to subgraph metadata */
+  _meta?: Maybe<_Meta_>
+}
+
+export type maticmumQueryhtlcerc20Args = {
+  id: Scalars['ID']
+  block?: InputMaybe<Block_height>
+  subgraphError?: _SubgraphErrorPolicy_
+}
+
+export type maticmumQueryhtlcerc20SArgs = {
+  skip?: InputMaybe<Scalars['Int']>
+  first?: InputMaybe<Scalars['Int']>
+  orderBy?: InputMaybe<HTLCERC20_orderBy>
+  orderDirection?: InputMaybe<OrderDirection>
+  where?: InputMaybe<HTLCERC20_filter>
+  block?: InputMaybe<Block_height>
+  subgraphError?: _SubgraphErrorPolicy_
+}
+
+export type maticmumQuery_metaArgs = {
+  block?: InputMaybe<Block_height>
+}
+
+export type maticmumSubscription = {
+  htlcerc20?: Maybe<HTLCERC20>
+  htlcerc20S: Array<HTLCERC20>
+  /** Access to subgraph metadata */
+  _meta?: Maybe<_Meta_>
+}
+
+export type maticmumSubscriptionhtlcerc20Args = {
+  id: Scalars['ID']
+  block?: InputMaybe<Block_height>
+  subgraphError?: _SubgraphErrorPolicy_
+}
+
+export type maticmumSubscriptionhtlcerc20SArgs = {
+  skip?: InputMaybe<Scalars['Int']>
+  first?: InputMaybe<Scalars['Int']>
+  orderBy?: InputMaybe<HTLCERC20_orderBy>
+  orderDirection?: InputMaybe<OrderDirection>
+  where?: InputMaybe<HTLCERC20_filter>
+  block?: InputMaybe<Block_height>
+  subgraphError?: _SubgraphErrorPolicy_
+}
+
+export type maticmumSubscription_metaArgs = {
+  block?: InputMaybe<Block_height>
+}
+
+export type fujiQuery = {
+  htlcerc20?: Maybe<HTLCERC20>
+  htlcerc20S: Array<HTLCERC20>
+  /** Access to subgraph metadata */
+  _meta?: Maybe<_Meta_>
+}
+
+export type fujiQueryhtlcerc20Args = {
+  id: Scalars['ID']
+  block?: InputMaybe<Block_height>
+  subgraphError?: _SubgraphErrorPolicy_
+}
+
+export type fujiQueryhtlcerc20SArgs = {
+  skip?: InputMaybe<Scalars['Int']>
+  first?: InputMaybe<Scalars['Int']>
+  orderBy?: InputMaybe<HTLCERC20_orderBy>
+  orderDirection?: InputMaybe<OrderDirection>
+  where?: InputMaybe<HTLCERC20_filter>
+  block?: InputMaybe<Block_height>
+  subgraphError?: _SubgraphErrorPolicy_
+}
+
+export type fujiQuery_metaArgs = {
+  block?: InputMaybe<Block_height>
+}
+
+export type fujiSubscription = {
+  htlcerc20?: Maybe<HTLCERC20>
+  htlcerc20S: Array<HTLCERC20>
+  /** Access to subgraph metadata */
+  _meta?: Maybe<_Meta_>
+}
+
+export type fujiSubscriptionhtlcerc20Args = {
+  id: Scalars['ID']
+  block?: InputMaybe<Block_height>
+  subgraphError?: _SubgraphErrorPolicy_
+}
+
+export type fujiSubscriptionhtlcerc20SArgs = {
+  skip?: InputMaybe<Scalars['Int']>
+  first?: InputMaybe<Scalars['Int']>
+  orderBy?: InputMaybe<HTLCERC20_orderBy>
+  orderDirection?: InputMaybe<OrderDirection>
+  where?: InputMaybe<HTLCERC20_filter>
+  block?: InputMaybe<Block_height>
+  subgraphError?: _SubgraphErrorPolicy_
+}
+
+export type fujiSubscription_metaArgs = {
+  block?: InputMaybe<Block_height>
+}
 
 export type WithIndex<TObject> = TObject & Record<string, any>
 export type ResolversObject<TObject> = WithIndex<TObject>
@@ -373,6 +435,8 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  Query: ResolverTypeWrapper<{}>
+  Subscription: ResolverTypeWrapper<{}>
   BigDecimal: ResolverTypeWrapper<Scalars['BigDecimal']>
   BigInt: ResolverTypeWrapper<Scalars['BigInt']>
   BlockChangedFilter: BlockChangedFilter
@@ -387,16 +451,20 @@ export type ResolversTypes = ResolversObject<{
   ID: ResolverTypeWrapper<Scalars['ID']>
   Int: ResolverTypeWrapper<Scalars['Int']>
   OrderDirection: OrderDirection
-  Query: ResolverTypeWrapper<{}>
   String: ResolverTypeWrapper<Scalars['String']>
-  Subscription: ResolverTypeWrapper<{}>
   _Block_: ResolverTypeWrapper<_Block_>
   _Meta_: ResolverTypeWrapper<_Meta_>
   _SubgraphErrorPolicy_: _SubgraphErrorPolicy_
+  maticmumQuery: ResolverTypeWrapper<maticmumQuery>
+  maticmumSubscription: ResolverTypeWrapper<maticmumSubscription>
+  fujiQuery: ResolverTypeWrapper<fujiQuery>
+  fujiSubscription: ResolverTypeWrapper<fujiSubscription>
 }>
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  Query: {}
+  Subscription: {}
   BigDecimal: Scalars['BigDecimal']
   BigInt: Scalars['BigInt']
   BlockChangedFilter: BlockChangedFilter
@@ -408,11 +476,13 @@ export type ResolversParentTypes = ResolversObject<{
   HTLCERC20_filter: HTLCERC20_filter
   ID: Scalars['ID']
   Int: Scalars['Int']
-  Query: {}
   String: Scalars['String']
-  Subscription: {}
   _Block_: _Block_
   _Meta_: _Meta_
+  maticmumQuery: maticmumQuery
+  maticmumSubscription: maticmumSubscription
+  fujiQuery: fujiQuery
+  fujiSubscription: fujiSubscription
 }>
 
 export type entityDirectiveArgs = {}
@@ -446,6 +516,27 @@ export type derivedFromDirectiveResolver<
   Args = derivedFromDirectiveArgs,
 > = DirectiveResolverFn<Result, Parent, ContextType, Args>
 
+export type QueryResolvers<
+  ContextType = MeshContext,
+  ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query'],
+> = ResolversObject<{
+  maticmum?: Resolver<ResolversTypes['maticmumQuery'], ParentType, ContextType>
+  fuji?: Resolver<ResolversTypes['fujiQuery'], ParentType, ContextType>
+}>
+
+export type SubscriptionResolvers<
+  ContextType = MeshContext,
+  ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription'],
+> = ResolversObject<{
+  maticmum?: SubscriptionResolver<
+    ResolversTypes['maticmumSubscription'],
+    'maticmum',
+    ParentType,
+    ContextType
+  >
+  fuji?: SubscriptionResolver<ResolversTypes['fujiSubscription'], 'fuji', ParentType, ContextType>
+}>
+
 export interface BigDecimalScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes['BigDecimal'], any> {
   name: 'BigDecimal'
@@ -478,57 +569,6 @@ export type HTLCERC20Resolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
-export type QueryResolvers<
-  ContextType = MeshContext,
-  ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query'],
-> = ResolversObject<{
-  htlcerc20?: Resolver<
-    Maybe<ResolversTypes['HTLCERC20']>,
-    ParentType,
-    ContextType,
-    RequireFields<Queryhtlcerc20Args, 'id' | 'subgraphError'>
-  >
-  htlcerc20S?: Resolver<
-    Array<ResolversTypes['HTLCERC20']>,
-    ParentType,
-    ContextType,
-    RequireFields<Queryhtlcerc20SArgs, 'skip' | 'first' | 'subgraphError'>
-  >
-  _meta?: Resolver<
-    Maybe<ResolversTypes['_Meta_']>,
-    ParentType,
-    ContextType,
-    Partial<Query_metaArgs>
-  >
-}>
-
-export type SubscriptionResolvers<
-  ContextType = MeshContext,
-  ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription'],
-> = ResolversObject<{
-  htlcerc20?: SubscriptionResolver<
-    Maybe<ResolversTypes['HTLCERC20']>,
-    'htlcerc20',
-    ParentType,
-    ContextType,
-    RequireFields<Subscriptionhtlcerc20Args, 'id' | 'subgraphError'>
-  >
-  htlcerc20S?: SubscriptionResolver<
-    Array<ResolversTypes['HTLCERC20']>,
-    'htlcerc20S',
-    ParentType,
-    ContextType,
-    RequireFields<Subscriptionhtlcerc20SArgs, 'skip' | 'first' | 'subgraphError'>
-  >
-  _meta?: SubscriptionResolver<
-    Maybe<ResolversTypes['_Meta_']>,
-    '_meta',
-    ParentType,
-    ContextType,
-    Partial<Subscription_metaArgs>
-  >
-}>
-
 export type _Block_Resolvers<
   ContextType = MeshContext,
   ParentType extends ResolversParentTypes['_Block_'] = ResolversParentTypes['_Block_'],
@@ -549,15 +589,119 @@ export type _Meta_Resolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
 }>
 
+export type maticmumQueryResolvers<
+  ContextType = MeshContext,
+  ParentType extends ResolversParentTypes['maticmumQuery'] = ResolversParentTypes['maticmumQuery'],
+> = ResolversObject<{
+  htlcerc20?: Resolver<
+    Maybe<ResolversTypes['HTLCERC20']>,
+    ParentType,
+    ContextType,
+    RequireFields<maticmumQueryhtlcerc20Args, 'id' | 'subgraphError'>
+  >
+  htlcerc20S?: Resolver<
+    Array<ResolversTypes['HTLCERC20']>,
+    ParentType,
+    ContextType,
+    RequireFields<maticmumQueryhtlcerc20SArgs, 'skip' | 'first' | 'subgraphError'>
+  >
+  _meta?: Resolver<
+    Maybe<ResolversTypes['_Meta_']>,
+    ParentType,
+    ContextType,
+    Partial<maticmumQuery_metaArgs>
+  >
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type maticmumSubscriptionResolvers<
+  ContextType = MeshContext,
+  ParentType extends ResolversParentTypes['maticmumSubscription'] = ResolversParentTypes['maticmumSubscription'],
+> = ResolversObject<{
+  htlcerc20?: Resolver<
+    Maybe<ResolversTypes['HTLCERC20']>,
+    ParentType,
+    ContextType,
+    RequireFields<maticmumSubscriptionhtlcerc20Args, 'id' | 'subgraphError'>
+  >
+  htlcerc20S?: Resolver<
+    Array<ResolversTypes['HTLCERC20']>,
+    ParentType,
+    ContextType,
+    RequireFields<maticmumSubscriptionhtlcerc20SArgs, 'skip' | 'first' | 'subgraphError'>
+  >
+  _meta?: Resolver<
+    Maybe<ResolversTypes['_Meta_']>,
+    ParentType,
+    ContextType,
+    Partial<maticmumSubscription_metaArgs>
+  >
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type fujiQueryResolvers<
+  ContextType = MeshContext,
+  ParentType extends ResolversParentTypes['fujiQuery'] = ResolversParentTypes['fujiQuery'],
+> = ResolversObject<{
+  htlcerc20?: Resolver<
+    Maybe<ResolversTypes['HTLCERC20']>,
+    ParentType,
+    ContextType,
+    RequireFields<fujiQueryhtlcerc20Args, 'id' | 'subgraphError'>
+  >
+  htlcerc20S?: Resolver<
+    Array<ResolversTypes['HTLCERC20']>,
+    ParentType,
+    ContextType,
+    RequireFields<fujiQueryhtlcerc20SArgs, 'skip' | 'first' | 'subgraphError'>
+  >
+  _meta?: Resolver<
+    Maybe<ResolversTypes['_Meta_']>,
+    ParentType,
+    ContextType,
+    Partial<fujiQuery_metaArgs>
+  >
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
+export type fujiSubscriptionResolvers<
+  ContextType = MeshContext,
+  ParentType extends ResolversParentTypes['fujiSubscription'] = ResolversParentTypes['fujiSubscription'],
+> = ResolversObject<{
+  htlcerc20?: Resolver<
+    Maybe<ResolversTypes['HTLCERC20']>,
+    ParentType,
+    ContextType,
+    RequireFields<fujiSubscriptionhtlcerc20Args, 'id' | 'subgraphError'>
+  >
+  htlcerc20S?: Resolver<
+    Array<ResolversTypes['HTLCERC20']>,
+    ParentType,
+    ContextType,
+    RequireFields<fujiSubscriptionhtlcerc20SArgs, 'skip' | 'first' | 'subgraphError'>
+  >
+  _meta?: Resolver<
+    Maybe<ResolversTypes['_Meta_']>,
+    ParentType,
+    ContextType,
+    Partial<fujiSubscription_metaArgs>
+  >
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>
+}>
+
 export type Resolvers<ContextType = MeshContext> = ResolversObject<{
+  Query?: QueryResolvers<ContextType>
+  Subscription?: SubscriptionResolvers<ContextType>
   BigDecimal?: GraphQLScalarType
   BigInt?: GraphQLScalarType
   Bytes?: GraphQLScalarType
   HTLCERC20?: HTLCERC20Resolvers<ContextType>
-  Query?: QueryResolvers<ContextType>
-  Subscription?: SubscriptionResolvers<ContextType>
   _Block_?: _Block_Resolvers<ContextType>
   _Meta_?: _Meta_Resolvers<ContextType>
+  maticmumQuery?: maticmumQueryResolvers<ContextType>
+  maticmumSubscription?: maticmumSubscriptionResolvers<ContextType>
+  fujiQuery?: fujiQueryResolvers<ContextType>
+  fujiSubscription?: fujiSubscriptionResolvers<ContextType>
 }>
 
 export type DirectiveResolvers<ContextType = MeshContext> = ResolversObject<{
@@ -566,7 +710,7 @@ export type DirectiveResolvers<ContextType = MeshContext> = ResolversObject<{
   derivedFrom?: derivedFromDirectiveResolver<any, any, ContextType>
 }>
 
-export type MeshContext = SwaposPolygonMumbaiTypes.Context & BaseMeshContext
+export type MeshContext = MaticmumTypes.Context & FujiTypes.Context & BaseMeshContext
 
 import { fileURLToPath } from '@graphql-mesh/utils'
 const baseDir = pathModule.join(pathModule.dirname(fileURLToPath(import.meta.url)), '..')
@@ -579,8 +723,11 @@ const importFn: ImportFn = <T>(moduleId: string) => {
     .join('/')
     .replace(baseDir + '/', '')
   switch (relativeModuleId) {
-    case '.graphclient/sources/swapos-polygon-mumbai/introspectionSchema':
-      return import('./sources/swapos-polygon-mumbai/introspectionSchema') as T
+    case '.graphclient/sources/maticmum/introspectionSchema':
+      return import('./sources/maticmum/introspectionSchema') as T
+
+    case '.graphclient/sources/fuji/introspectionSchema':
+      return import('./sources/fuji/introspectionSchema') as T
 
     default:
       return Promise.reject(new Error(`Cannot find module '${relativeModuleId}'.`))
@@ -616,19 +763,50 @@ export async function getMeshOptions(): Promise<GetMeshOptions> {
   const sources: MeshResolvedSource[] = []
   const transforms: MeshTransform[] = []
   const additionalEnvelopPlugins: MeshPlugin<any>[] = []
-  const swaposPolygonMumbaiTransforms = []
+  const maticmumTransforms = []
+  const fujiTransforms = []
   const additionalTypeDefs = [] as any[]
-  const swaposPolygonMumbaiHandler = new GraphqlHandler({
-    name: 'swapos-polygon-mumbai',
+  const maticmumHandler = new GraphqlHandler({
+    name: 'maticmum',
     config: {
       endpoint: 'https://api.thegraph.com/subgraphs/name/mprasanjith/swapos-polygon-mumbai',
     },
     baseDir,
     cache,
     pubsub,
-    store: sourcesStore.child('swapos-polygon-mumbai'),
-    logger: logger.child('swapos-polygon-mumbai'),
+    store: sourcesStore.child('maticmum'),
+    logger: logger.child('maticmum'),
     importFn,
+  })
+  const fujiHandler = new GraphqlHandler({
+    name: 'fuji',
+    config: {
+      endpoint: 'https://api.thegraph.com/subgraphs/name/mprasanjith/swapos-avalanche-fuji',
+    },
+    baseDir,
+    cache,
+    pubsub,
+    store: sourcesStore.child('fuji'),
+    logger: logger.child('fuji'),
+    importFn,
+  })
+  maticmumTransforms[0] = new EncapsulateTransform({
+    apiName: 'maticmum',
+    config: { applyTo: { query: true, mutation: true, subscription: true } },
+    baseDir,
+    cache,
+    pubsub,
+    importFn,
+    logger,
+  })
+  fujiTransforms[0] = new EncapsulateTransform({
+    apiName: 'fuji',
+    config: { applyTo: { query: true, mutation: true, subscription: true } },
+    baseDir,
+    cache,
+    pubsub,
+    importFn,
+    logger,
   })
   additionalEnvelopPlugins[0] = await UsePollingLive({
     ...{
@@ -640,8 +818,17 @@ export async function getMeshOptions(): Promise<GetMeshOptions> {
     baseDir,
     importFn,
   })
-  swaposPolygonMumbaiTransforms[0] = new BlockTrackingTransform({
-    apiName: 'swapos-polygon-mumbai',
+  maticmumTransforms[1] = new BlockTrackingTransform({
+    apiName: 'maticmum',
+    config: { validateSchema: true },
+    baseDir,
+    cache,
+    pubsub,
+    importFn,
+    logger,
+  })
+  fujiTransforms[1] = new BlockTrackingTransform({
+    apiName: 'fuji',
     config: { validateSchema: true },
     baseDir,
     cache,
@@ -650,16 +837,21 @@ export async function getMeshOptions(): Promise<GetMeshOptions> {
     logger,
   })
   sources[0] = {
-    name: 'swapos-polygon-mumbai',
-    handler: swaposPolygonMumbaiHandler,
-    transforms: swaposPolygonMumbaiTransforms,
+    name: 'maticmum',
+    handler: maticmumHandler,
+    transforms: maticmumTransforms,
+  }
+  sources[1] = {
+    name: 'fuji',
+    handler: fujiHandler,
+    transforms: fujiTransforms,
   }
   const additionalResolvers = [] as any[]
-  const merger = new (BareMerger as any)({
+  const merger = new (StitchingMerger as any)({
     cache,
     pubsub,
-    logger: logger.child('bareMerger'),
-    store: rootStore.child('bareMerger'),
+    logger: logger.child('stitchingMerger'),
+    store: rootStore.child('stitchingMerger'),
   })
 
   return {
@@ -673,15 +865,7 @@ export async function getMeshOptions(): Promise<GetMeshOptions> {
     logger,
     additionalEnvelopPlugins,
     get documents() {
-      return [
-        {
-          document: GetAllHtlCsDocument,
-          get rawSDL() {
-            return printWithCache(GetAllHtlCsDocument)
-          },
-          location: 'GetAllHtlCsDocument.graphql',
-        },
-      ]
+      return []
     },
     fetchFn,
   }
@@ -717,68 +901,3 @@ export const execute: ExecuteMeshFn = (...args) =>
 
 export const subscribe: SubscribeMeshFn = (...args) =>
   getBuiltGraphClient().then(({ subscribe }) => subscribe(...args))
-export function getBuiltGraphSDK<TGlobalContext = any, TOperationContext = any>(
-  globalContext?: TGlobalContext,
-) {
-  const sdkRequester$ = getBuiltGraphClient().then(({ sdkRequesterFactory }) =>
-    sdkRequesterFactory(globalContext),
-  )
-  return getSdk<TOperationContext, TGlobalContext>((...args) =>
-    sdkRequester$.then((sdkRequester) => sdkRequester(...args)),
-  )
-}
-export type GetAllHTLCsQueryVariables = Exact<{ [key: string]: never }>
-
-export type GetAllHTLCsQuery = {
-  htlcerc20S: Array<
-    Pick<
-      HTLCERC20,
-      | 'id'
-      | 'sender'
-      | 'senderAmount'
-      | 'senderDomain'
-      | 'senderToken'
-      | 'receiverDomain'
-      | 'receiverAmount'
-      | 'receiverToken'
-      | 'sendStatus'
-    >
-  >
-}
-
-export const GetAllHTLCsDocument = gql`
-  query GetAllHTLCs @live {
-    htlcerc20S(orderBy: createdAt, orderDirection: desc) {
-      id
-      sender
-      senderAmount
-      senderDomain
-      senderToken
-      receiverDomain
-      receiverAmount
-      receiverToken
-      sendStatus
-    }
-  }
-` as unknown as DocumentNode<GetAllHTLCsQuery, GetAllHTLCsQueryVariables>
-
-export type Requester<C = {}, E = unknown> = <R, V>(
-  doc: DocumentNode,
-  vars?: V,
-  options?: C,
-) => Promise<R> | AsyncIterable<R>
-export function getSdk<C, E>(requester: Requester<C, E>) {
-  return {
-    GetAllHTLCs(
-      variables?: GetAllHTLCsQueryVariables,
-      options?: C,
-    ): AsyncIterable<GetAllHTLCsQuery> {
-      return requester<GetAllHTLCsQuery, GetAllHTLCsQueryVariables>(
-        GetAllHTLCsDocument,
-        variables,
-        options,
-      ) as AsyncIterable<GetAllHTLCsQuery>
-    },
-  }
-}
-export type Sdk = ReturnType<typeof getSdk>

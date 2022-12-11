@@ -101,6 +101,7 @@ importers:
       '@ethersproject/providers': ^5.7.2
       '@graphprotocol/client-cli': ^2.2.16
       '@graphprotocol/client-urql': ^1.0.13
+      '@graphql-mesh/transform-encapsulate': ^0.4.3
       '@rainbow-me/rainbowkit': ^0.8.0
       '@testing-library/react': ^13.4.0
       '@types/downloadjs': ^1.4.3
@@ -147,6 +148,7 @@ importers:
       '@emotion/styled': 11.10.5_hmjty4frusbltjhl3xd7udcm2y
       '@ethathon/contracts': link:../contracts
       '@graphprotocol/client-urql': 1.0.13_o2aubqzgfue4ab3eutprwxt5he
+      '@graphql-mesh/transform-encapsulate': 0.4.3_5ebiurs2ub7s74lb4mbnznbnk4
       '@rainbow-me/rainbowkit': 0.8.0_34cjc2jjasoiqsg4jltjjgnhi4
       big-number-input: 1.0.3_biqbaboplfbrettd7655fr4n2y
       date-fns: 2.29.3
@@ -194,7 +196,7 @@ importers:
       twin.macro: 3.0.0_tailwindcss@3.2.4
       typescript: 4.9.3
 
-  packages/subgraph-sender:
+  packages/subgraph:
     specifiers:
       '@graphprotocol/graph-cli': 0.37.1
       '@graphprotocol/graph-ts': 0.28.1
@@ -3469,7 +3471,7 @@ packages:
     peerDependencies:
       graphql: '*'
     dependencies:
-      '@graphql-mesh/types': 0.89.2_5ebiurs2ub7s74lb4mbnznbnk4
+      '@graphql-mesh/types': 0.89.2_graphql@16.6.0
       '@graphql-mesh/utils': 0.43.3_5ebiurs2ub7s74lb4mbnznbnk4
       graphql: 16.6.0
       localforage: 1.10.0
@@ -3695,7 +3697,7 @@ packages:
     dependencies:
       '@graphql-inspector/core': 3.3.0_graphql@16.6.0
       '@graphql-mesh/cross-helpers': 0.3.0_5ebiurs2ub7s74lb4mbnznbnk4
-      '@graphql-mesh/types': 0.89.2_graphql@16.6.0
+      '@graphql-mesh/types': 0.89.2_5ebiurs2ub7s74lb4mbnznbnk4
       '@graphql-mesh/utils': 0.43.3_5ebiurs2ub7s74lb4mbnznbnk4
       '@graphql-tools/utils': 9.1.3_graphql@16.6.0
       graphql: 16.6.0
@@ -3713,6 +3715,23 @@ packages:
       graphql: 16.6.0
       json-pointer: 0.6.2
       lodash.get: 4.4.2
+
+  /@graphql-mesh/transform-encapsulate/0.4.3_5ebiurs2ub7s74lb4mbnznbnk4:
+    resolution: {integrity: sha512-7RkXFLWBRu42kbtft46cQYxcLwX0YBw9b0HTqDF0lH6OXaWPvNq/YeSqS++mGUbuJioGDAEienaSS6CDW7BPJA==}
+    peerDependencies:
+      graphql: '*'
+    dependencies:
+      '@graphql-mesh/types': 0.89.2_5ebiurs2ub7s74lb4mbnznbnk4
+      '@graphql-mesh/utils': 0.43.3_5ebiurs2ub7s74lb4mbnznbnk4
+      '@graphql-tools/delegate': 9.0.20_graphql@16.6.0
+      '@graphql-tools/utils': 9.1.3_graphql@16.6.0
+      '@graphql-tools/wrap': 9.2.21_graphql@16.6.0
+      graphql: 16.6.0
+      tslib: 2.4.1
+    transitivePeerDependencies:
+      - react-native
+      - react-native-windows
+    dev: false
 
   /@graphql-mesh/transform-type-merging/0.5.3_5ebiurs2ub7s74lb4mbnznbnk4:
     resolution: {integrity: sha512-W/w7bvKuNKustVnPy+ry/9i5x1AcY23FOXu9ARVjLrZUB3B4Id80c+VLgFZXTl3jc7WysJNsy4fNTHgDNPjnKA==}
@@ -3745,7 +3764,6 @@ packages:
     transitivePeerDependencies:
       - react-native
       - react-native-windows
-    dev: true
 
   /@graphql-mesh/types/0.89.2_graphql@16.6.0:
     resolution: {integrity: sha512-5Hrgmwb/enSu1Aj4E6G5lnQxtR99zUR/x82wVaQvqhXZCTTztHHzdHjQwNywJNqUVBxPUg1To8mGXhZQsu4NTQ==}
@@ -13867,7 +13885,6 @@ packages:
     resolution: {integrity: sha512-N9iVG+CGJsI4b4ZGazjwLnxErD2d9Pe4DPvvXSxYA9tFNu8ymXME4Qs5HIQ0LMJpNM7zj+m0NlNnNeqFpKzqnA==}
     deprecated: Unmaintained
     dev: false
-    bundledDependencies: []
 
   /prompts/2.4.2:
     resolution: {integrity: sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q==}

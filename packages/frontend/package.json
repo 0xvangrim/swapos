@@ -26,6 +26,7 @@
     "@emotion/styled": "^11.10.5",
     "@ethathon/contracts": "workspace:*",
     "@graphprotocol/client-urql": "^1.0.13",
+    "@graphql-mesh/transform-encapsulate": "^0.4.3",
     "@rainbow-me/rainbowkit": "^0.8.0",
     "big-number-input": "^1.0.3",
     "date-fns": "^2.29.3",

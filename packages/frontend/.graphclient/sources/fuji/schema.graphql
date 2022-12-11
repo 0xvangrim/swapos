@@ -12,16 +12,6 @@ directive @subgraphId(id: String!) on OBJECT
 "creates a virtual field on the entity that may be queried but cannot be set manually through the mappings API."
 directive @derivedFrom(field: String!) on FIELD_DEFINITION
 
-type Query {
-  maticmum: maticmumQuery!
-  fuji: fujiQuery!
-}
-
-type Subscription {
-  maticmum: maticmumSubscription!
-  fuji: fujiSubscription!
-}
-
 scalar BigDecimal
 
 scalar BigInt
@@ -169,6 +159,14 @@ enum OrderDirection {
   desc
 }
 
+type Query {
+  fuji: fujiQuery!
+}
+
+type Subscription {
+  fuji: fujiSubscription!
+}
+
 type _Block_ {
   """The hash of the block"""
   hash: Bytes
@@ -201,68 +199,6 @@ enum _SubgraphErrorPolicy_ {
   If the subgraph has indexing errors, data will be omitted. The default.
   """
   deny
-}
-
-type maticmumQuery {
-  htlcerc20(
-    id: ID!
-    """
-    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
-    """
-    block: Block_height
-    """
-    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
-    """
-    subgraphError: _SubgraphErrorPolicy_! = deny
-  ): HTLCERC20
-  htlcerc20S(
-    skip: Int = 0
-    first: Int = 100
-    orderBy: HTLCERC20_orderBy
-    orderDirection: OrderDirection
-    where: HTLCERC20_filter
-    """
-    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
-    """
-    block: Block_height
-    """
-    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
-    """
-    subgraphError: _SubgraphErrorPolicy_! = deny
-  ): [HTLCERC20!]!
-  """Access to subgraph metadata"""
-  _meta(block: Block_height): _Meta_
-}
-
-type maticmumSubscription {
-  htlcerc20(
-    id: ID!
-    """
-    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
-    """
-    block: Block_height
-    """
-    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
-    """
-    subgraphError: _SubgraphErrorPolicy_! = deny
-  ): HTLCERC20
-  htlcerc20S(
-    skip: Int = 0
-    first: Int = 100
-    orderBy: HTLCERC20_orderBy
-    orderDirection: OrderDirection
-    where: HTLCERC20_filter
-    """
-    The block at which the query should be executed. Can either be a `{ hash: Bytes }` value containing a block hash, a `{ number: Int }` containing the block number, or a `{ number_gte: Int }` containing the minimum block number. In the case of `number_gte`, the query will be executed on the latest block only if the subgraph has progressed to or past the minimum block number. Defaults to the latest block when omitted.
-    """
-    block: Block_height
-    """
-    Set to `allow` to receive data even if the subgraph has skipped over errors while syncing.
-    """
-    subgraphError: _SubgraphErrorPolicy_! = deny
-  ): [HTLCERC20!]!
-  """Access to subgraph metadata"""
-  _meta(block: Block_height): _Meta_
 }
 
 type fujiQuery {

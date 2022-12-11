@@ -1,16 +1,32 @@
 # .graphclientrc.yml
 sources:
-  - name: swapos-polygon-mumbai
+  - name: maticmum
     handler:
       graphql:
         endpoint: https://api.thegraph.com/subgraphs/name/mprasanjith/swapos-polygon-mumbai
     transforms:
+      - encapsulate:
+          applyTo:
+            query: true
+            mutation: true
+            subscription: true
+      - blockTracking:
+          validateSchema: true
+  - name: fuji
+    handler:
+      graphql:
+        endpoint: https://api.thegraph.com/subgraphs/name/mprasanjith/swapos-avalanche-fuji
+    transforms:
+      - encapsulate:
+          applyTo:
+            query: true
+            mutation: true
+            subscription: true
       - blockTracking:
           validateSchema: true
 
 plugins:
   - pollingLive:
       defaultInterval: 1000
-
-documents:
-  - ./src/queries/getAll.graphql
+# documents:
+#   - ./src/queries/getAll.graphql

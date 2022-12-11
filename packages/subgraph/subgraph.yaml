@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum
     name: ERC20MultichainAtomicSwapSender
-    network: mumbai
+    network: fuji
     source:
       abi: ERC20MultichainAtomicSwapSender
-      address: "0x029c4a217f7557aB8D6f8bbAF5af1242148f91e7"
-      startBlock: 29607550
+      address: "0xf381D062396aFC38298249aCC28b4A2c0839c5e5"
+      startBlock: 16810270
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

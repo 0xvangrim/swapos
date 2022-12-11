@@ -3,7 +3,7 @@
 import { InContextSdkMethod } from '@graphql-mesh/types'
 import { MeshContext } from '@graphql-mesh/runtime'
 
-export namespace SwaposPolygonMumbaiTypes {
+export namespace FujiTypes {
   export type Maybe<T> = T | null
   export type InputMaybe<T> = Maybe<T>
   export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] }
@@ -155,57 +155,11 @@ export namespace SwaposPolygonMumbaiTypes {
   export type OrderDirection = 'asc' | 'desc'
 
   export type Query = {
-    htlcerc20?: Maybe<HTLCERC20>
-    htlcerc20S: Array<HTLCERC20>
-    /** Access to subgraph metadata */
-    _meta?: Maybe<_Meta_>
-  }
-
-  export type Queryhtlcerc20Args = {
-    id: Scalars['ID']
-    block?: InputMaybe<Block_height>
-    subgraphError?: _SubgraphErrorPolicy_
-  }
-
-  export type Queryhtlcerc20SArgs = {
-    skip?: InputMaybe<Scalars['Int']>
-    first?: InputMaybe<Scalars['Int']>
-    orderBy?: InputMaybe<HTLCERC20_orderBy>
-    orderDirection?: InputMaybe<OrderDirection>
-    where?: InputMaybe<HTLCERC20_filter>
-    block?: InputMaybe<Block_height>
-    subgraphError?: _SubgraphErrorPolicy_
-  }
-
-  export type Query_metaArgs = {
-    block?: InputMaybe<Block_height>
+    fuji: fujiQuery
   }
 
   export type Subscription = {
-    htlcerc20?: Maybe<HTLCERC20>
-    htlcerc20S: Array<HTLCERC20>
-    /** Access to subgraph metadata */
-    _meta?: Maybe<_Meta_>
-  }
-
-  export type Subscriptionhtlcerc20Args = {
-    id: Scalars['ID']
-    block?: InputMaybe<Block_height>
-    subgraphError?: _SubgraphErrorPolicy_
-  }
-
-  export type Subscriptionhtlcerc20SArgs = {
-    skip?: InputMaybe<Scalars['Int']>
-    first?: InputMaybe<Scalars['Int']>
-    orderBy?: InputMaybe<HTLCERC20_orderBy>
-    orderDirection?: InputMaybe<OrderDirection>
-    where?: InputMaybe<HTLCERC20_filter>
-    block?: InputMaybe<Block_height>
-    subgraphError?: _SubgraphErrorPolicy_
-  }
-
-  export type Subscription_metaArgs = {
-    block?: InputMaybe<Block_height>
+    fuji: fujiSubscription
   }
 
   export type _Block_ = {
@@ -239,35 +193,73 @@ export namespace SwaposPolygonMumbaiTypes {
     /** If the subgraph has indexing errors, data will be omitted. The default. */
     | 'deny'
 
+  export type fujiQuery = {
+    htlcerc20?: Maybe<HTLCERC20>
+    htlcerc20S: Array<HTLCERC20>
+    /** Access to subgraph metadata */
+    _meta?: Maybe<_Meta_>
+  }
+
+  export type fujiQueryhtlcerc20Args = {
+    id: Scalars['ID']
+    block?: InputMaybe<Block_height>
+    subgraphError?: _SubgraphErrorPolicy_
+  }
+
+  export type fujiQueryhtlcerc20SArgs = {
+    skip?: InputMaybe<Scalars['Int']>
+    first?: InputMaybe<Scalars['Int']>
+    orderBy?: InputMaybe<HTLCERC20_orderBy>
+    orderDirection?: InputMaybe<OrderDirection>
+    where?: InputMaybe<HTLCERC20_filter>
+    block?: InputMaybe<Block_height>
+    subgraphError?: _SubgraphErrorPolicy_
+  }
+
+  export type fujiQuery_metaArgs = {
+    block?: InputMaybe<Block_height>
+  }
+
+  export type fujiSubscription = {
+    htlcerc20?: Maybe<HTLCERC20>
+    htlcerc20S: Array<HTLCERC20>
+    /** Access to subgraph metadata */
+    _meta?: Maybe<_Meta_>
+  }
+
+  export type fujiSubscriptionhtlcerc20Args = {
+    id: Scalars['ID']
+    block?: InputMaybe<Block_height>
+    subgraphError?: _SubgraphErrorPolicy_
+  }
+
+  export type fujiSubscriptionhtlcerc20SArgs = {
+    skip?: InputMaybe<Scalars['Int']>
+    first?: InputMaybe<Scalars['Int']>
+    orderBy?: InputMaybe<HTLCERC20_orderBy>
+    orderDirection?: InputMaybe<OrderDirection>
+    where?: InputMaybe<HTLCERC20_filter>
+    block?: InputMaybe<Block_height>
+    subgraphError?: _SubgraphErrorPolicy_
+  }
+
+  export type fujiSubscription_metaArgs = {
+    block?: InputMaybe<Block_height>
+  }
+
   export type QuerySdk = {
-    /** null **/
-    htlcerc20: InContextSdkMethod<Query['htlcerc20'], Queryhtlcerc20Args, MeshContext>
-    /** null **/
-    htlcerc20S: InContextSdkMethod<Query['htlcerc20S'], Queryhtlcerc20SArgs, MeshContext>
-    /** Access to subgraph metadata **/
-    _meta: InContextSdkMethod<Query['_meta'], Query_metaArgs, MeshContext>
+    /** undefined **/
+    fuji: InContextSdkMethod<Query['fuji'], {}, MeshContext>
   }
 
   export type MutationSdk = {}
 
   export type SubscriptionSdk = {
-    /** null **/
-    htlcerc20: InContextSdkMethod<Subscription['htlcerc20'], Subscriptionhtlcerc20Args, MeshContext>
-    /** null **/
-    htlcerc20S: InContextSdkMethod<
-      Subscription['htlcerc20S'],
-      Subscriptionhtlcerc20SArgs,
-      MeshContext
-    >
-    /** Access to subgraph metadata **/
-    _meta: InContextSdkMethod<Subscription['_meta'], Subscription_metaArgs, MeshContext>
+    /** undefined **/
+    fuji: InContextSdkMethod<Subscription['fuji'], {}, MeshContext>
   }
 
   export type Context = {
-    ['swapos-polygon-mumbai']: {
-      Query: QuerySdk
-      Mutation: MutationSdk
-      Subscription: SubscriptionSdk
-    }
+    ['fuji']: { Query: QuerySdk; Mutation: MutationSdk; Subscription: SubscriptionSdk }
   }
 }
