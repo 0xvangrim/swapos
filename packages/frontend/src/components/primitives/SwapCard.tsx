@@ -39,12 +39,12 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc }) => {
 
   const senderAmountFormatted = useMemo(
     () => utils.formatUnits(htlc.senderAmount, senderToken?.decimals),
-    [htlc.senderAmount],
+    [htlc.senderAmount, senderToken],
   )
 
   const receiverAmountFormatted = useMemo(
     () => utils.formatUnits(htlc.receiverAmount, receiverToken?.decimals),
-    [htlc.senderAmount],
+    [htlc.receiverAmount, receiverToken],
   )
 
   return (
