@@ -21,13 +21,13 @@ cp packages/frontend/.env.local.example packages/frontend/.env.local
 cp packages/contracts/.env.example packages/contracts/.env
 ```
 
-Generate contract-types, start local hardhat node, and start frontend with turborepo.
+Generate contract-types, start local hardhat node, and start frontend with turborepo (from root-dir).
 
 ```bash
 pnpm dev
+```
 
-
-Only start frontend (from root-dir).
+Just start frontend (from root-dir).
 
 ```bash
 pnpm frontend:dev
