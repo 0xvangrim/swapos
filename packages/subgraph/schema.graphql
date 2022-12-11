@@ -4,13 +4,13 @@ enum HTLCSendStatus {
   REFUNDED
 }
 
-# enum HTLCWithdrawalStatus {
-#   INITIATED,
-#   COMPLETED,
-#   REFUNDED
-# }
+enum HTLCReceiveStatus {
+  PENDING,
+  COMPLETED,
+  REFUNDED
+}
 
-type HTLCERC20 @entity(immutable: true) {
+type HTLCERC20 @entity {
   id: ID!
 
   sender: Bytes!
@@ -28,4 +28,11 @@ type HTLCERC20 @entity(immutable: true) {
 
   sendStatus: HTLCSendStatus!
   # withdrawalStatus: HTLCWithdrawalStatus!
+}
+
+type HTLCERC20Receipt @entity {
+  id: ID!
+
+  receiver: Bytes!
+  receiveStatus: HTLCReceiveStatus! 
 }

@@ -3,12 +3,20 @@
     "ERC20MultichainAtomicSwapSender": {
       "address": "0x029c4a217f7557aB8D6f8bbAF5af1242148f91e7",
       "startBlock": 29607550
+    },
+    "ERC20MultichainAtomicSwapReceiver": {
+      "address": "0xD23ABDF377B182bCCe4ebE712c5473a0Ee47a143",
+      "startBlock": 29607650
     }
   },
   "fuji": {
     "ERC20MultichainAtomicSwapSender": {
       "address": "0xf381D062396aFC38298249aCC28b4A2c0839c5e5",
       "startBlock": 16810270
+    },
+    "ERC20MultichainAtomicSwapReceiver": {
+      "address": "0x432427852A22508EDD774DeA3b4962E8dACa1B7b",
+      "startBlock": 16810490
     }
   }
 }
