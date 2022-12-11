@@ -23,7 +23,20 @@ Router.events.on('routeChangeComplete', () => NProgress.done())
 Router.events.on('routeChangeError', () => NProgress.done())
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [swapOSState, setSwapOSState] = useState([])
+  const [swapOSState, setSwapOSState] = useState([
+    {
+      amount: 100,
+      toChain: 'Ethereum Mainnet',
+      tokenIn: 'LUSD',
+      tokenOut: 'LUSD',
+    },
+    {
+      amount: 3000,
+      toChain: 'Optimism',
+      tokenIn: 'sUSD',
+      tokenOut: 'sUSD',
+    },
+  ])
   return (
     <>
       <Head>
