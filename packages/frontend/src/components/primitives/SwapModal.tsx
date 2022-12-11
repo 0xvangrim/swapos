@@ -11,45 +11,117 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  NumberInput,
+  NumberInputField,
   Select,
   Text,
 } from '@chakra-ui/react'
 import SwapOSContext from '@components/context/SwapOSContext'
 import { shortenAddress } from '@components/helpers/shortenAddress'
+import { useDeployments } from '@shared/useDeployments'
 import { useTokens } from '@shared/useTokens'
-import { useContext, useRef, useState } from 'react'
-import { useAccount } from 'wagmi'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useAccount,
+  useNetwork,
+  useContractWrite,
+  usePrepareContractWrite,
+  useBalance,
+  erc20ABI,
+  useContractRead,
+  useWaitForTransaction,
+} from 'wagmi'
+import senderContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapSender.sol/ERC20MultichainAtomicSwapSender.json'
+import { addHours, getUnixTime } from 'date-fns'
+import { BigNumber, utils } from 'ethers'
+import { chainIdToDomainId } from '@config/chains'
+import { BigNumberInput } from 'big-number-input'
 
 export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) => {
+  const contractAddresses = useDeployments()
+
   const { address } = useAccount()
+  const { chains } = useNetwork()
   const finalRef = useRef(null)
   const { swapOSState, setSwapOSState }: any = useContext(SwapOSContext)
 
-  const [amount, setAmount] = useState(0)
-  const [toChain, setToChain] = useState('')
-  const [tokenIn, setTokenIn] = useState('')
-  const [tokenOut, setTokenOut] = useState('')
+  const [amount, setAmount] = useState<string>('')
+  const [toChain, setToChain] = useState<number>(0)
+  const [tokenIn, setTokenIn] = useState<string>('')
+  const [tokenOut, setTokenOut] = useState<string>('')
 
   const { tokens: sentTokensList } = useTokens()
-  const { tokens: receivedTokensList } = useTokens()
+  const { tokens: receivedTokensList } = useTokens(toChain)
 
-  const handleAmountChange = (e: any) => setAmount(e?.target.value)
-  const handleToChainChange = (e: any) => setToChain(e?.target.value)
+  const { data: sentToken } = useBalance({
+    address: tokenIn ? address : undefined,
+    token: tokenIn as any,
+  })
+
+  // Validations and Transformations
+  const senderAmount = useMemo(() => BigNumber.from(amount || '0'), [amount])
+  const receiverAmount = useMemo(() => BigNumber.from(amount || '0'), [amount])
+
+  const handleAmountChange = (value: any) => setAmount(value)
+  const handleToChainChange = (e: any) => {
+    setToChain(e?.target.value)
+    setTokenOut('')
+  }
   const handleTokenInChange = (e: any) => setTokenIn(e?.target.value)
   const handleTokenOutChange = (e: any) => setTokenOut(e?.target.value)
 
-  const handleSubmitRequest = () => {
-    setSwapOSState([
-      ...swapOSState,
-      {
-        amount,
-        toChain,
-        tokenIn,
-        tokenOut,
-      },
-    ])
-    onClose()
-  }
+  const canSubmitRequest = useMemo(() => {
+    return amount && toChain && tokenIn && tokenOut
+  }, [amount, toChain, tokenIn, tokenOut])
+
+  // Token Approvals
+  const { data: sentTokenApprovalAmount } = useContractRead({
+    address: tokenIn,
+    abi: erc20ABI,
+    functionName: 'allowance',
+    args: [address as any, contractAddresses.contracts?.sender as any],
+    watch: true,
+  })
+
+  const { config: configApproval } = usePrepareContractWrite({
+    address: tokenIn,
+    abi: erc20ABI,
+    functionName: 'approve',
+    args: [contractAddresses.contracts?.sender as any, senderAmount],
+  })
+
+  const {
+    data: dataApproval,
+    isLoading: isLoadingApproval,
+    write: writeApproval,
+  } = useContractWrite(configApproval)
+  const { isFetching: isTokenApprovalInProgress } = useWaitForTransaction({
+    hash: dataApproval?.hash,
+  })
+
+  // New HTLC creation
+  const { config } = usePrepareContractWrite({
+    address: contractAddresses.contracts?.sender,
+    abi: senderContract.abi,
+    functionName: 'newContract',
+    args: [
+      BigNumber.from(getUnixTime(addHours(new Date(), 1))), // _timelock,
+      tokenIn, // _senderToken,
+      senderAmount, // _senderAmount
+      chainIdToDomainId[toChain], // _receiverDomain,
+      tokenOut, // _receiverToken
+      receiverAmount, // _receiverAmount
+    ],
+  })
+
+  const { data, isLoading, isSuccess, write } = useContractWrite(config)
+  const { isFetched: isTxComplete, isFetching: isInProgress } = useWaitForTransaction({
+    hash: data?.hash,
+  })
+
+  useEffect(() => {
+    if (isTxComplete) onClose()
+  }, [isTxComplete])
 
   return (
     <>
@@ -91,14 +163,20 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                   <FormLabel fontSize={'14px'} textColor={'#666666'}>
                     Amount
                   </FormLabel>
-                  <Input
-                    size={'sm'}
-                    variant={'filled'}
-                    placeholder="Amount"
-                    bg={'#F3F2F2'}
-                    borderRadius={'8px'}
-                    value={amount}
+                  <BigNumberInput
+                    decimals={sentToken?.decimals || 18}
                     onChange={handleAmountChange}
+                    value={amount}
+                    renderInput={({ as, ...props }) => (
+                      <Input
+                        {...props}
+                        size="sm"
+                        variant={'filled'}
+                        placeholder="Amount"
+                        bg={'#F3F2F2'}
+                        borderRadius={'8px'}
+                      />
+                    )}
                   />
                   <FormLabel fontSize={'14px'} mt={'16px'} textColor={'#666666'}>
                     To chain
@@ -112,8 +190,11 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     value={toChain}
                     onChange={handleToChainChange}
                   >
-                    <option>Goerli testnet</option>
-                    <option>Mumbai testnet</option>
+                    {chains.map((chain) => (
+                      <option key={chain.id} value={chain.id}>
+                        {chain.name}
+                      </option>
+                    ))}
                   </Select>
                 </Box>
                 <Box>
@@ -130,7 +211,9 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     onChange={handleTokenInChange}
                   >
                     {sentTokensList.map((token) => (
-                      <option key={token.address}>USDC</option>
+                      <option key={token.address} value={token.address}>
+                        {token.symbol}
+                      </option>
                     ))}
                   </Select>
                   <FormLabel fontSize={'14px'} mt={'16px'} textColor={'#666666'}>
@@ -146,7 +229,9 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
                     onChange={handleTokenOutChange}
                   >
                     {receivedTokensList.map((token) => (
-                      <option key={token.address}>USDC</option>
+                      <option key={token.address} value={token.address}>
+                        {token.symbol}
+                      </option>
                     ))}
                   </Select>
                 </Box>
@@ -156,20 +241,48 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
           <Divider />
           <ModalFooter>
             <Box display={'flex'} width={'100%'} flexDir={'column'}>
-              <Button
-                bg={'black'}
-                textColor={'white'}
-                colorScheme={'teal'}
-                borderRadius={'8px'}
-                padding={'8px 16px 8px 16px'}
-                gap={'10px'}
-                onClick={handleSubmitRequest}
-                width={'100%'}
-                type={'submit'}
-                marginBottom={'8px'}
-              >
-                Submit Request
-              </Button>
+              {sentTokenApprovalAmount?.gte(senderAmount) ? (
+                <Button
+                  isLoading={isLoading || isInProgress}
+                  disabled={!canSubmitRequest || sentToken?.value.lt(senderAmount)}
+                  bg={'black'}
+                  textColor={'white'}
+                  colorScheme={'teal'}
+                  borderRadius={'8px'}
+                  padding={'8px 16px 8px 16px'}
+                  gap={'10px'}
+                  onClick={() => write?.()}
+                  width={'100%'}
+                  type={'submit'}
+                  marginBottom={'8px'}
+                >
+                  Submit Request
+                </Button>
+              ) : (
+                <Button
+                  isLoading={isLoadingApproval || isTokenApprovalInProgress}
+                  disabled={!writeApproval || sentToken?.value.lt(senderAmount)}
+                  bg={'black'}
+                  textColor={'white'}
+                  colorScheme={'teal'}
+                  borderRadius={'8px'}
+                  padding={'8px 16px 8px 16px'}
+                  gap={'10px'}
+                  onClick={() => writeApproval?.()}
+                  width={'100%'}
+                  type={'submit'}
+                  marginBottom={'8px'}
+                >
+                  Approve {sentToken?.symbol} transfer
+                </Button>
+              )}
+
+              {sentToken?.value.lt(senderAmount) && (
+                <Text textAlign={'center'} textColor={'red'} fontSize={'12px'}>
+                  You do not have enough {sentToken?.symbol} to perform this swap
+                </Text>
+              )}
+
               <Text textAlign={'center'} textColor={'#666666'} fontSize={'12px'}>
                 Request will only execute if conditions are met.
               </Text>

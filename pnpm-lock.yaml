@@ -109,6 +109,8 @@ importers:
       '@typescript-eslint/parser': ^5.43.0
       babel-loader: ^9.1.0
       babel-plugin-macros: ^3.1.0
+      big-number-input: ^1.0.3
+      date-fns: ^2.29.3
       eslint: ^8.27.0
       eslint-config-next: ^13.0.4
       eslint-config-prettier: ^8.5.0
@@ -139,6 +141,8 @@ importers:
       '@emotion/styled': 11.10.5_hmjty4frusbltjhl3xd7udcm2y
       '@ethathon/contracts': link:../contracts
       '@rainbow-me/rainbowkit': 0.8.0_34cjc2jjasoiqsg4jltjjgnhi4
+      big-number-input: 1.0.3_biqbaboplfbrettd7655fr4n2y
+      date-fns: 2.29.3
       ethers: 5.7.2
       framer-motion: 6.5.1_biqbaboplfbrettd7655fr4n2y
       next: 13.0.4_22zznl4krlnhaprkt2jq37lyte
@@ -178,7 +182,7 @@ importers:
       twin.macro: 3.0.0_tailwindcss@3.2.4
       typescript: 4.9.3
 
-  packages/subgraph:
+  packages/subgraph-sender:
     specifiers:
       '@graphprotocol/graph-cli': 0.37.1
       '@graphprotocol/graph-ts': 0.28.1
@@ -5914,6 +5918,17 @@ packages:
   /bech32/1.1.4:
     resolution: {integrity: sha512-s0IrSOzLlbvX7yp4WBfPITzpAU8sqQcpsmwXDiKwrG4r491vwCO/XpejasRNl0piBMe/DvP4Tz0mIS/X1DPJBQ==}
 
+  /big-number-input/1.0.3_biqbaboplfbrettd7655fr4n2y:
+    resolution: {integrity: sha512-t0BZ9+t9T8DdMpUYgXk+CxiGGPOMPRuy8iGcOxyTD1R1sw21R4UNyQJWnuhufRhp+imv83Sl0CP2XzQCcqSYYw==}
+    peerDependencies:
+      react: '>=16.8.0 || ^18.0.0'
+      react-dom: '>=16.8.0 || ^18.0.0'
+    dependencies:
+      '@ethersproject/units': 5.7.0
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+    dev: false
+
   /bigint-buffer/1.1.5:
     resolution: {integrity: sha512-trfYco6AoZ+rKhKnxA0hgX0HAbVP/s808/EuDSe2JDzUnCp/xAsli35Orvk67UrTEcwuxZqYZDmfA2RXJgxVvA==}
     engines: {node: '>= 10.0.0'}
@@ -6888,6 +6903,11 @@ packages:
     engines: {node: '>=0.10'}
     dependencies:
       assert-plus: 1.0.0
+
+  /date-fns/2.29.3:
+    resolution: {integrity: sha512-dDCnyH2WnnKusqvZZ6+jA1O51Ibt8ZMRNkDZdyAyK4YfbDwa/cEmuztzG5pk6hqlp9aSBPYcjOlktquahGwGeA==}
+    engines: {node: '>=0.11'}
+    dev: false
 
   /dayjs/1.11.6:
     resolution: {integrity: sha512-zZbY5giJAinCG+7AGaw0wIhNZ6J8AhWuSXKvuc1KAyMiRsvGQWqh4L+MomvhdAYjN+lqvVCMq1I41e3YHvXkyQ==}

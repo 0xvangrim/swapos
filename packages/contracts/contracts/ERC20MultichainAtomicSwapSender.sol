@@ -94,19 +94,6 @@ contract ERC20MultichainAtomicSwapSender is Router {
     _;
   }
 
-  // constructor(
-  //   address _connectionManager,
-  //   address _interchainGasPaymaster
-  //   // uint32 _senderDomain
-  // ) {
-  //   _transferOwnership(msg.sender);
-  //   __Router_initialize(
-  //       _connectionManager,
-  //       _interchainGasPaymaster
-  //   );
-  //   // senderDomain = _senderDomain;
-  // }
-
   function initialize(
     address _connectionManager,
     address _interchainGasPaymaster,
