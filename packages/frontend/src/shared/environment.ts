@@ -23,5 +23,6 @@ export const env = {
     137: process.env.NEXT_PUBLIC_RPC_137!, // Polygon Mainnet
     80001: process.env.NEXT_PUBLIC_RPC_80001!, // Mumbai
     1287: process.env.NEXT_PUBLIC_RPC_1287!,
+    43113: process.env.NEXT_PUBLIC_RPC_43113!,
   },
 }

@@ -1,7 +1,8 @@
 {
   "mumbai": {
     "ERC20MultichainAtomicSwapSender": {
-      "address": "0x3bdd5cbdF72ab0218aff51cA992C80727cbC83d7"
+      "address": "0x029c4a217f7557aB8D6f8bbAF5af1242148f91e7",
+      "startBlock": 29607550
     }
   }
 }

@@ -1,11 +1,32 @@
 import { Box, Heading } from '@chakra-ui/react'
-import { SwapOSStateProps } from '@components/types'
-import { FC, useContext } from 'react'
-import SwapOSContext from '../context/SwapOSContext'
+import { FC, useEffect } from 'react'
 import { SwapCard } from '../primitives/SwapCard'
+import { execute, HTLCERC20 } from '../../../.graphclient'
+import gql from 'graphql-tag'
+import { useState } from 'react'
+import { useAccount } from 'wagmi'
 
 export const RequestedSwapsWrapper: FC = () => {
-  const { swapOSState, _ }: any = useContext(SwapOSContext)
+  const { isConnected } = useAccount()
+  const [htlcs, setHtlcs] = useState<HTLCERC20[]>([])
+
+  useEffect(() => {
+    execute(gql`
+      query {
+        htlcerc20S {
+          id
+          senderAmount
+          senderDomain
+          senderToken
+          receiverAmount
+          receiverToken
+          receiverDomain
+          sendStatus
+        }
+      }
+    `).then((result: any) => setHtlcs(result?.data?.htlcerc20S))
+  }, [])
+
   return (
     <>
       <Box
@@ -28,19 +49,7 @@ export const RequestedSwapsWrapper: FC = () => {
             Requested swaps
           </Heading>
         </Box>
-        <Box>
-          {swapOSState.map(
-            ({ amount, toChain, tokenIn, tokenOut }: SwapOSStateProps, index: number) => (
-              <SwapCard
-                key={index}
-                amount={amount}
-                toChain={toChain}
-                tokenIn={tokenIn}
-                tokenOut={tokenOut}
-              />
-            ),
-          )}
-        </Box>
+        <Box>{isConnected && htlcs.map((htlc) => <SwapCard key={htlc.id} htlc={htlc} />)}</Box>
         <Box />
       </Box>
     </>

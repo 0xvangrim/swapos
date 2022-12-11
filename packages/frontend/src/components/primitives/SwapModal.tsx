@@ -11,16 +11,14 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  NumberInput,
-  NumberInputField,
   Select,
   Text,
+  useToast,
 } from '@chakra-ui/react'
-import SwapOSContext from '@components/context/SwapOSContext'
 import { shortenAddress } from '@components/helpers/shortenAddress'
 import { useDeployments } from '@shared/useDeployments'
 import { useTokens } from '@shared/useTokens'
-import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   useAccount,
   useNetwork,
@@ -33,17 +31,17 @@ import {
 } from 'wagmi'
 import senderContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapSender.sol/ERC20MultichainAtomicSwapSender.json'
 import { addHours, getUnixTime } from 'date-fns'
-import { BigNumber, utils } from 'ethers'
+import { BigNumber } from 'ethers'
 import { chainIdToDomainId } from '@config/chains'
 import { BigNumberInput } from 'big-number-input'
 
 export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) => {
+  const toast = useToast()
   const contractAddresses = useDeployments()
 
   const { address } = useAccount()
   const { chains } = useNetwork()
   const finalRef = useRef(null)
-  const { swapOSState, setSwapOSState }: any = useContext(SwapOSContext)
 
   const [amount, setAmount] = useState<string>('')
   const [toChain, setToChain] = useState<number>(0)
@@ -88,6 +86,12 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
     abi: erc20ABI,
     functionName: 'approve',
     args: [contractAddresses.contracts?.sender as any, senderAmount],
+    onError: (error) =>
+      toast({
+        title: 'Error occurred.',
+        description: error.message,
+        status: 'error',
+      }),
   })
 
   const {
@@ -97,6 +101,7 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
   } = useContractWrite(configApproval)
   const { isFetching: isTokenApprovalInProgress } = useWaitForTransaction({
     hash: dataApproval?.hash,
+    onSuccess: () => toast({ title: 'Approval successful', status: 'success' }),
   })
 
   // New HTLC creation

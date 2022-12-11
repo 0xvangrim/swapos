@@ -1,5 +1,4 @@
 import { ChakraProvider } from '@chakra-ui/react'
-import SwapOSContext from '@components/context/SwapOSContext'
 import { HomeTopBar } from '@components/home/HomeTopBar'
 import { BaseLayout } from '@components/layout/BaseLayout'
 import { HotToastConfig } from '@components/layout/HotToastConfig'
@@ -54,10 +53,8 @@ function MyApp({ Component, pageProps }: AppProps) {
               coolMode={true}
             >
               <BaseLayout>
-                <SwapOSContext.Provider value={{ swapOSState, setSwapOSState }}>
-                  <HomeTopBar />
-                  <Component {...pageProps} />
-                </SwapOSContext.Provider>
+                <HomeTopBar />
+                <Component {...pageProps} />
               </BaseLayout>
             </RainbowKitProvider>
           </WagmiConfig>
