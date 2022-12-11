@@ -1,12 +1,25 @@
-import { Box, Button, Card, CardBody, Heading, Text } from '@chakra-ui/react'
+import { Box, Button, Card, CardBody, Heading, Text, useToast } from '@chakra-ui/react'
 import { FC } from 'react'
 import { BsArrowRight } from 'react-icons/bs'
-import { useAccount, useNetwork, useToken } from 'wagmi'
+import {
+  erc20ABI,
+  useAccount,
+  useBalance,
+  useContractRead,
+  useContractWrite,
+  useNetwork,
+  usePrepareContractWrite,
+  useSwitchNetwork,
+  useToken,
+  useWaitForTransaction,
+} from 'wagmi'
 import { HTLCERC20 } from '../../../.graphclient'
 import { domainIdToChainId } from '@config/chains'
 import { useMemo } from 'react'
 import { utils } from 'ethers'
 import { fromUnixTime, isAfter, isBefore } from 'date-fns'
+import { useDeployments } from '@shared/useDeployments'
+import senderContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapSender.sol/ERC20MultichainAtomicSwapSender.json'
 
 interface SwapCardProps {
   htlc: HTLCERC20
@@ -14,8 +27,10 @@ interface SwapCardProps {
 }
 
 export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
+  const toast = useToast()
   const { address: ownAddress } = useAccount()
   const { chain } = useNetwork()
+  const contractAddresses = useDeployments()
 
   const isSender = useMemo(
     () => ownAddress?.toLowerCase() === htlc.sender?.toLowerCase(),
@@ -65,18 +80,89 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   const isReceiverChain = useMemo(() => chain?.id === receiverChainId, [chain, receiverChainId])
 
   const isExpired = useMemo(() => isAfter(new Date(), fromUnixTime(htlc.timelock)), [htlc])
+  const isCompleted = useMemo(() => htlc.sendStatus !== 'PENDING', [htlc])
+
   const isWithdrawable = useMemo(
-    () => !(isSender || isReceiver || isExpired),
+    () => !(isSender || isReceiver || isExpired || isCompleted),
     [isSender, isReceiver, isExpired, htlc],
   )
   const isRefundable = useMemo(
-    () => (isSender || isReceiver) && isExpired,
+    () => (isSender || isReceiver) && isExpired && !isCompleted,
     [isSender, isReceiver, isExpired, htlc],
   )
 
   function capitalize(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
   }
+
+  // Refunds
+  const { config: refundConfig } = usePrepareContractWrite({
+    address: contractAddresses.contracts?.sender,
+    abi: senderContract.abi,
+    functionName: 'refund',
+    args: [htlc.id],
+    enabled: isSenderChain && isRefundable,
+  })
+  const {
+    data: refundData,
+    isLoading: refundIsLoading,
+    isSuccess: refundIsSuccess,
+    write: refundWrite,
+  } = useContractWrite(refundConfig)
+  const { isFetched: isRefundTxComplete, isFetching: isRefundInProgress } = useWaitForTransaction({
+    hash: refundData?.hash,
+  })
+
+  const { switchNetwork: switchToSenderChain } = useSwitchNetwork({ chainId: senderChainId })
+  function handleRefund() {
+    if (!isRefundable) return false
+    if (!isSenderChain) {
+      toast({
+        title: 'Switch network',
+        status: 'warning',
+        description: 'You need to switch network to continue',
+      })
+      switchToSenderChain?.()
+      return
+    }
+
+    refundWrite?.()
+  }
+
+  // Withdrawals - Deposit Token Approval
+  const { data: sentTokenApprovalAmount } = useContractRead({
+    address: htlc.receiverToken,
+    abi: erc20ABI,
+    functionName: 'allowance',
+    args: [ownAddress as any, contractAddresses.contracts?.receiver as any],
+    watch: true,
+    enabled: isWithdrawable && isReceiverChain,
+  })
+
+  const { config: configApproval } = usePrepareContractWrite({
+    address: htlc.receiverToken,
+    abi: erc20ABI,
+    functionName: 'approve',
+    args: [contractAddresses.contracts?.receiver as any, htlc.receiverAmount],
+    enabled: isWithdrawable && isReceiverChain,
+  })
+
+  const {
+    data: dataApproval,
+    isLoading: isLoadingApproval,
+    write: writeApproval,
+  } = useContractWrite(configApproval)
+  const { isFetching: isTokenApprovalInProgress } = useWaitForTransaction({
+    hash: dataApproval?.hash,
+    onSuccess: () => toast({ title: 'Approval successful', status: 'success' }),
+  })
+
+  // Withdrawals
+  const { data: receiverTokenBalance } = useBalance({
+    address: ownAddress,
+    token: htlc.receiverToken,
+    enabled: isWithdrawable && isReceiverChain,
+  })
 
   return (
     <Card backgroundColor={'#FFFFF'} borderRadius={'16px'} marginBottom={'16px'}>
@@ -131,18 +217,35 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
           </Box>
         )}
 
-        {isWithdrawable && (
-          <Button
-            colorScheme="blackAlpha"
-            variant={'ghost'}
-            color={'black'}
-            border={'1px solid #E5E5E5'}
-          >
-            Accept
-          </Button>
-        )}
+        {isWithdrawable &&
+          (sentTokenApprovalAmount?.lt(htlc.receiverAmount) ? (
+            <Button
+              isLoading={isLoadingApproval || isTokenApprovalInProgress}
+              disabled={!writeApproval}
+              colorScheme="blackAlpha"
+              variant={'ghost'}
+              color={'black'}
+              border={'1px solid #E5E5E5'}
+            >
+              Accept
+            </Button>
+          ) : (
+            <Button
+              // isLoading={isLoading || isInProgress}
+              //       disabled={!canSubmitRequest || sentToken?.value.lt(senderAmount)}
+              colorScheme="green"
+              variant={'ghost'}
+              color={'black'}
+              border={'1px solid #E5E5E5'}
+            >
+              Confirm
+            </Button>
+          ))}
+
         {isRefundable && (
           <Button
+            isLoading={refundIsLoading || isRefundInProgress}
+            onClick={handleRefund}
             colorScheme="blackAlpha"
             variant={'ghost'}
             color={'black'}

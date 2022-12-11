@@ -13,7 +13,7 @@ export const RequestedSwapsWrapper: FC = () => {
   const { chains, chain } = useNetwork()
 
   const currentChain = useMemo(() => {
-    if (!chain) return chains[0]
+    if (!chain) return chains[0] || 'mumbai'
     return chain
   }, [chain, chains])
 
@@ -22,7 +22,7 @@ export const RequestedSwapsWrapper: FC = () => {
     return chains.filter((c) => c.id !== chain.id)[0]
   }, [chain, chains])
 
-  const [result, reexecuteQuery] = useQuery({
+  const [result] = useQuery({
     requestPolicy: 'network-only',
     query: gql`
       query GetAllHTLCs($chain: String) @live {
