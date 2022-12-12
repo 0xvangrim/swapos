@@ -16,10 +16,11 @@ import {
 import { HTLCERC20 } from '../../../.graphclient'
 import { domainIdToChainId } from '@config/chains'
 import { useMemo } from 'react'
-import { utils } from 'ethers'
+import { BigNumber, utils } from 'ethers'
 import { fromUnixTime, isAfter, isBefore } from 'date-fns'
 import { useDeployments } from '@shared/useDeployments'
 import senderContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapSender.sol/ERC20MultichainAtomicSwapSender.json'
+import receiverContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapReceiver.sol/ERC20MultichainAtomicSwapReceiver.json'
 
 interface SwapCardProps {
   htlc: HTLCERC20
@@ -129,6 +130,17 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
     refundWrite?.()
   }
 
+  // Withdrawals - Balance checks
+  const { data: receiverTokenBalance } = useBalance({
+    address: ownAddress,
+    token: htlc.receiverToken,
+    enabled: isWithdrawable && isReceiverChain,
+  })
+  const userHasBalance = useMemo(
+    () => receiverTokenBalance?.value.gte(htlc.senderAmount),
+    [receiverTokenBalance, htlc],
+  )
+
   // Withdrawals - Deposit Token Approval
   const { data: sentTokenApprovalAmount } = useContractRead({
     address: htlc.receiverToken,
@@ -157,12 +169,49 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
     onSuccess: () => toast({ title: 'Approval successful', status: 'success' }),
   })
 
+  function approveTokens() {
+    if (!userHasBalance) {
+      toast({
+        title: 'Insufficient balance',
+        description: 'You do not have enough funds to complete this swap',
+        status: 'error',
+      })
+    } else {
+      writeApproval?.()
+    }
+  }
+
   // Withdrawals
-  const { data: receiverTokenBalance } = useBalance({
-    address: ownAddress,
-    token: htlc.receiverToken,
-    enabled: isWithdrawable && isReceiverChain,
+  const { config: withdrawConfig, error } = usePrepareContractWrite({
+    address: contractAddresses.contracts?.receiver,
+    abi: receiverContract.abi,
+    functionName: 'startWithdrawal',
+    args: [
+      BigNumber.from(htlc.timelock),
+      htlc.sender,
+      htlc.senderDomain,
+      htlc.senderToken,
+      BigNumber.from(htlc.senderAmount),
+      htlc.receiverToken,
+      BigNumber.from(htlc.receiverAmount),
+    ],
   })
+  const { data, isLoading, isSuccess, write } = useContractWrite(withdrawConfig)
+  const { isFetched: isTxComplete, isFetching: isInProgress } = useWaitForTransaction({
+    hash: data?.hash,
+  })
+
+  function withdrawTokens() {
+    if (!userHasBalance) {
+      toast({
+        title: 'Insufficient balance',
+        description: 'You do not have enough funds to complete this swap',
+        status: 'error',
+      })
+    } else {
+      write?.()
+    }
+  }
 
   return (
     <Card backgroundColor={'#FFFFF'} borderRadius={'16px'} marginBottom={'16px'}>
@@ -213,7 +262,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
             paddingInlineEnd="4"
             color={'black'}
           >
-            {isExpired ? 'Expired' : capitalize(htlc.sendStatus)}
+            {isExpired ? 'Finished' : capitalize(htlc.sendStatus)}
           </Box>
         )}
 
@@ -222,6 +271,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
             <Button
               isLoading={isLoadingApproval || isTokenApprovalInProgress}
               disabled={!writeApproval}
+              onClick={approveTokens}
               colorScheme="blackAlpha"
               variant={'ghost'}
               color={'black'}
@@ -231,8 +281,8 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
             </Button>
           ) : (
             <Button
-              // isLoading={isLoading || isInProgress}
-              //       disabled={!canSubmitRequest || sentToken?.value.lt(senderAmount)}
+              isLoading={isLoading || isInProgress}
+              onClick={withdrawTokens}
               colorScheme="green"
               variant={'ghost'}
               color={'black'}

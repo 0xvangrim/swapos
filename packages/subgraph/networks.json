@@ -1,21 +1,21 @@
 {
   "mumbai": {
     "ERC20MultichainAtomicSwapSender": {
-      "address": "0x029c4a217f7557aB8D6f8bbAF5af1242148f91e7",
+      "address": "0x010D212ABED378E61b6412C46ceD7396955b5250",
       "startBlock": 29607550
     },
     "ERC20MultichainAtomicSwapReceiver": {
-      "address": "0xD23ABDF377B182bCCe4ebE712c5473a0Ee47a143",
+      "address": "0x77835CA9B4057B5C3C20d9028bc0690C0974DC0d",
       "startBlock": 29607650
     }
   },
   "fuji": {
     "ERC20MultichainAtomicSwapSender": {
-      "address": "0xf381D062396aFC38298249aCC28b4A2c0839c5e5",
+      "address": "0x9e83a6E79A9edA36832A8eB673d8E7Ce7b9850e9",
       "startBlock": 16810270
     },
     "ERC20MultichainAtomicSwapReceiver": {
-      "address": "0x432427852A22508EDD774DeA3b4962E8dACa1B7b",
+      "address": "0x0e43874EDf2860A0B129861D6452cA1435B164E5",
       "startBlock": 16810490
     }
   }

@@ -19,7 +19,8 @@ export type HelloWorldConfig = SenderConfig
 export type SenderConfig = RouterConfig & { senderDomain: number }
 
 export const prodConfigs = {
-  mumbai: chainConnectionConfigs.mumbai,
+  alfajores: chainConnectionConfigs.alfajores,
+  // mumbai: chainConnectionConfigs.mumbai,
   fuji: chainConnectionConfigs.fuji,
 }
 

@@ -15,7 +15,8 @@
     "eslint": "eslint . --ext .js,.ts",
     "solhint": "solhint 'contracts/**/*.sol'",
     "deploy": "pnpm ts-node ./deploy/deploy-local.ts",
-    "deploy:testnet": "pnpm ts-node ./deploy/deploy.ts"
+    "deploy:testnet": "pnpm ts-node ./deploy/deploy.ts",
+    "enroll:testnet": "pnpm ts-node ./deploy/enroll.ts"
   },
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
