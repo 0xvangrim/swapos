@@ -10,7 +10,8 @@ interface useSwapsReturn {
   expiredUserReceivedSwaps: { htlcerc20S: HTLCERC20[] }
   liveUserSentSwaps: { htlcerc20S: HTLCERC20[] }
   liveUserReceivedSwaps: { htlcerc20S: HTLCERC20[] }
-  completedUserSwaps: { htlcerc20S: HTLCERC20[] }
+  completedUserSentSwaps: { htlcerc20S: HTLCERC20[] }
+  completedUserReceivedSwaps: { htlcerc20S: HTLCERC20[] }
 }
 
 const useSwaps = (): useSwapsReturn => {
@@ -104,8 +105,23 @@ const useSwaps = (): useSwapsReturn => {
             }
           }
 
-          completedUserSwaps: ${currentChain?.network} {
+          completedUserSentSwaps: ${currentChain?.network} {
             htlcerc20S(where: { sendStatus_not: PENDING, sender: "${addressStr}" }, orderBy: createdAt, orderDirection: desc) {
+              id
+              sender
+              senderAmount
+              senderDomain
+              senderToken
+              receiverDomain
+              receiverAmount
+              receiverToken
+              timelock
+              sendStatus
+            }
+          }
+
+          completedUserReceivedSwaps: ${otherChain?.network} {
+            htlcerc20S(where: { sendStatus_not: PENDING, receiver: "${addressStr}" }, orderBy: createdAt, orderDirection: desc) {
               id
               sender
               senderAmount
@@ -122,6 +138,7 @@ const useSwaps = (): useSwapsReturn => {
       `,
   })
   const { data } = result
+  console.log({ currUnixTime, data })
   return data
 }
 

@@ -20,7 +20,13 @@ const RequestedSwapsWrapper: FC = () => {
   }, [data])
 
   const activeSwaps = useMemo(() => data?.livePendingSwaps?.htlcerc20S || [], [data])
-  const finishedSwaps = useMemo(() => data?.completedUserSwaps?.htlcerc20S || [], [data])
+
+  const finishedSwaps = useMemo(() => {
+    const finishedHtlcs = []
+    finishedHtlcs.push(...(data?.completedUserReceivedSwaps?.htlcerc20S || []))
+    finishedHtlcs.push(...(data?.completedUserSentSwaps?.htlcerc20S || []))
+    return finishedHtlcs
+  }, [data])
 
   return (
     <>
