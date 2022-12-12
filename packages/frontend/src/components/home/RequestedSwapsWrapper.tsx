@@ -1,68 +1,26 @@
 import { Box, Heading } from '@chakra-ui/react'
-import { FC } from 'react'
+import { FC, useMemo } from 'react'
 import { SwapCard } from '../primitives/SwapCard'
-import { HTLCERC20 } from '../../../.graphclient'
-import gql from 'graphql-tag'
 import { useAccount, useNetwork } from 'wagmi'
-import { useQuery } from 'urql'
-import { useMemo } from 'react'
-import { chainIdToDomainId } from '@config/chains'
+import useSwaps from '@components/hooks/useSwaps'
 
-export const RequestedSwapsWrapper: FC = () => {
-  const { isConnected, address } = useAccount()
-  const { chains, chain } = useNetwork()
+const RequestedSwapsWrapper: FC = () => {
+  const { isConnected } = useAccount()
+  const { chain } = useNetwork()
 
-  const currentChain = useMemo(() => {
-    if (!chain) return chains[0] || 'mumbai'
-    return chain
-  }, [chain, chains])
+  const data = useSwaps()
 
-  const otherChain = useMemo(() => {
-    if (!chain) return chains[0]
-    return chains.filter((c) => c.id !== chain.id)[0]
-  }, [chain, chains])
+  const ownSwaps = useMemo(() => {
+    const ownHtlcs = []
+    ownHtlcs.push(...(data?.liveUserSentSwaps?.htlcerc20S || []))
+    ownHtlcs.push(...(data?.liveUserReceivedSwaps?.htlcerc20S || []))
+    ownHtlcs.push(...(data?.expiredUserSentSwaps?.htlcerc20S || []))
+    ownHtlcs.push(...(data?.expiredUserReceivedSwaps?.htlcerc20S || []))
+    return ownHtlcs
+  }, [data])
 
-  const [result] = useQuery({
-    requestPolicy: 'network-only',
-    query: gql`
-      query GetAllHTLCs($chain: String) @live {
-        ${currentChain?.network} {
-          htlcerc20S(where: { sender: "${address}" }, orderBy: createdAt, orderDirection: desc) {
-            id
-            sender
-            senderAmount
-            senderDomain
-            senderToken
-            receiverDomain
-            receiverAmount
-            receiverToken
-            timelock
-            sendStatus
-          }
-        }
-        ${otherChain?.network} {
-          htlcerc20S(where: { receiverDomain: "${
-            chainIdToDomainId[currentChain.id]
-          }" }, orderBy: createdAt, orderDirection: desc) {
-            id
-            sender
-            senderAmount
-            senderDomain
-            senderToken
-            receiverDomain
-            receiverAmount
-            receiverToken
-            timelock
-            sendStatus
-          }
-        }
-
-      }
-    `,
-  })
-  const { data, fetching, error } = result
-  const otherHtlcs: HTLCERC20[] = data?.[otherChain?.network]?.htlcerc20S
-  const ownHtlcs: HTLCERC20[] = data?.[currentChain?.network]?.htlcerc20S
+  const activeSwaps = useMemo(() => data?.livePendingSwaps?.htlcerc20S || [], [data])
+  const finishedSwaps = useMemo(() => data?.completedUserSwaps?.htlcerc20S || [], [data])
 
   return (
     <>
@@ -75,36 +33,67 @@ export const RequestedSwapsWrapper: FC = () => {
         backgroundColor={'#F9F9F9'}
         padding={'16px'}
       >
-        {ownHtlcs?.length > 0 && (
-          <Box marginTop={'16px'} marginBottom={'16px'}>
-            <Heading
-              fontSize={'24px'}
-              color={'#C5C5C5'}
-              fontStyle={'normal'}
-              lineHeight={'26px'}
-              fontWeight={500}
-            >
-              Your swaps on {chain?.name}
-            </Heading>
-          </Box>
+        {ownSwaps?.length > 0 && (
+          <>
+            <Box marginTop={'16px'} marginBottom={'16px'}>
+              <Heading
+                fontSize={'24px'}
+                color={'#C5C5C5'}
+                fontStyle={'normal'}
+                lineHeight={'26px'}
+                fontWeight={500}
+              >
+                Your swaps
+              </Heading>
+            </Box>
+            <Box>
+              {isConnected && ownSwaps?.map((htlc) => <SwapCard key={htlc.id} htlc={htlc} />)}
+            </Box>
+          </>
         )}
-        <Box>{isConnected && ownHtlcs?.map((htlc) => <SwapCard key={htlc.id} htlc={htlc} />)}</Box>
 
-        <Box marginTop={'16px'} marginBottom={'16px'}>
-          <Heading
-            fontSize={'24px'}
-            color={'#C5C5C5'}
-            fontStyle={'normal'}
-            lineHeight={'26px'}
-            fontWeight={500}
-          >
-            Requested swaps
-          </Heading>
-        </Box>
-        <Box>
-          {isConnected && otherHtlcs?.map((htlc) => <SwapCard invert key={htlc.id} htlc={htlc} />)}
-        </Box>
+        {activeSwaps.length > 0 && (
+          <>
+            <Box marginTop={'16px'} marginBottom={'16px'}>
+              <Heading
+                fontSize={'24px'}
+                color={'#C5C5C5'}
+                fontStyle={'normal'}
+                lineHeight={'26px'}
+                fontWeight={500}
+              >
+                Requested swaps
+              </Heading>
+            </Box>
+            <Box>
+              {activeSwaps?.map((htlc) => (
+                <SwapCard key={htlc.id} htlc={htlc} />
+              ))}
+            </Box>
+          </>
+        )}
+
+        {finishedSwaps.length > 0 && (
+          <>
+            <Box marginTop={'16px'} marginBottom={'16px'}>
+              <Heading
+                fontSize={'24px'}
+                color={'#C5C5C5'}
+                fontStyle={'normal'}
+                lineHeight={'26px'}
+                fontWeight={500}
+              >
+                Finished swaps
+              </Heading>
+            </Box>
+            <Box>
+              {isConnected && finishedSwaps?.map((htlc) => <SwapCard key={htlc.id} htlc={htlc} />)}
+            </Box>
+          </>
+        )}
       </Box>
     </>
   )
 }
+
+export default RequestedSwapsWrapper

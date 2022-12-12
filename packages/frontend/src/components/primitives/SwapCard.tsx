@@ -21,6 +21,8 @@ import { fromUnixTime, isAfter, isBefore } from 'date-fns'
 import { useDeployments } from '@shared/useDeployments'
 import senderContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapSender.sol/ERC20MultichainAtomicSwapSender.json'
 import receiverContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapReceiver.sol/ERC20MultichainAtomicSwapReceiver.json'
+import { useQuery } from 'urql'
+import gql from 'graphql-tag'
 
 interface SwapCardProps {
   htlc: HTLCERC20
@@ -30,8 +32,46 @@ interface SwapCardProps {
 export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   const toast = useToast()
   const { address: ownAddress } = useAccount()
-  const { chain } = useNetwork()
   const contractAddresses = useDeployments()
+
+  const { isConnected, address } = useAccount()
+  const { chain, chains } = useNetwork()
+
+  const senderChainId = useMemo(() => domainIdToChainId[htlc.senderDomain], [htlc.senderDomain])
+  const receiverChainId = useMemo(
+    () => domainIdToChainId[htlc.receiverDomain],
+    [htlc.receiverDomain],
+  )
+
+  const senderChain = useMemo(
+    () => chains.find((chain) => chain.id === senderChainId),
+    [chains, senderChainId],
+  )
+  const receiverChain = useMemo(
+    () => chains.find((chain) => chain.id === receiverChainId),
+    [chains, receiverChainId],
+  )
+
+  const [receipt] = useQuery({
+    requestPolicy: 'network-only',
+    query: gql`
+      query GetHTLCReceipt @live {
+        ${receiverChain?.network} {
+          htlcerc20Receipt(id: "1") {
+            id
+            receiver
+            receiveStatus
+          }
+        }
+      }
+    `,
+  })
+
+  const receiptStatus = useMemo(
+    () => receipt.data?.[receiverChain?.network as string]?.htlcerc20Receipts?.receiveStatus,
+    [receipt, receiverChain],
+  )
+  const hasReceiptStatus = useMemo(() => !!receiptStatus, [receiptStatus])
 
   const isSender = useMemo(
     () => ownAddress?.toLowerCase() === htlc.sender?.toLowerCase(),
@@ -42,12 +82,6 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
     [htlc, ownAddress],
   )
 
-  const senderChainId = useMemo(() => domainIdToChainId[htlc.senderDomain], [htlc.senderDomain])
-  const receiverChainId = useMemo(
-    () => domainIdToChainId[htlc.receiverDomain],
-    [htlc.receiverDomain],
-  )
-
   const { data: senderToken } = useToken({
     address: htlc.senderToken,
     chainId: senderChainId,
@@ -56,16 +90,6 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
     address: htlc.receiverToken,
     chainId: receiverChainId,
   })
-
-  const { chains } = useNetwork()
-  const senderChain = useMemo(
-    () => chains.find((chain) => chain.id === senderChainId),
-    [chains, senderChainId],
-  )
-  const receiverChain = useMemo(
-    () => chains.find((chain) => chain.id === receiverChainId),
-    [chains, receiverChainId],
-  )
 
   const senderAmountFormatted = useMemo(
     () => (senderToken ? utils.formatUnits(htlc?.senderAmount, senderToken?.decimals) : ''),
@@ -84,7 +108,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   const isCompleted = useMemo(() => htlc.sendStatus !== 'PENDING', [htlc])
 
   const isWithdrawable = useMemo(
-    () => !(isSender || isReceiver || isExpired || isCompleted),
+    () => !(isSender || isReceiver || isExpired || isCompleted || hasReceiptStatus),
     [isSender, isReceiver, isExpired, htlc],
   )
   const isRefundable = useMemo(
@@ -107,10 +131,9 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   const {
     data: refundData,
     isLoading: refundIsLoading,
-    isSuccess: refundIsSuccess,
     write: refundWrite,
   } = useContractWrite(refundConfig)
-  const { isFetched: isRefundTxComplete, isFetching: isRefundInProgress } = useWaitForTransaction({
+  const { isFetching: isRefundInProgress } = useWaitForTransaction({
     hash: refundData?.hash,
   })
 
@@ -182,7 +205,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   }
 
   // Withdrawals
-  const { config: withdrawConfig, error } = usePrepareContractWrite({
+  const { config: withdrawConfig } = usePrepareContractWrite({
     address: contractAddresses.contracts?.receiver,
     abi: receiverContract.abi,
     functionName: 'startWithdrawal',
@@ -196,8 +219,8 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
       BigNumber.from(htlc.receiverAmount),
     ],
   })
-  const { data, isLoading, isSuccess, write } = useContractWrite(withdrawConfig)
-  const { isFetched: isTxComplete, isFetching: isInProgress } = useWaitForTransaction({
+  const { data, isLoading, write } = useContractWrite(withdrawConfig)
+  const { isFetching: isInProgress } = useWaitForTransaction({
     hash: data?.hash,
   })
 
@@ -262,7 +285,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
             paddingInlineEnd="4"
             color={'black'}
           >
-            {isExpired ? 'Finished' : capitalize(htlc.sendStatus)}
+            {capitalize(receiptStatus || htlc.sendStatus)}
           </Box>
         )}
 
