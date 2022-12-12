@@ -34,7 +34,6 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   const { address: ownAddress } = useAccount()
   const contractAddresses = useDeployments()
 
-  const { isConnected, address } = useAccount()
   const { chain, chains } = useNetwork()
 
   const senderChainId = useMemo(() => domainIdToChainId[htlc.senderDomain], [htlc.senderDomain])
@@ -165,16 +164,19 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   )
 
   // Withdrawals - Deposit Token Approval
-  const { data: sentTokenApprovalAmount } = useContractRead({
+  const {
+    data: approvalAmount,
+    refetch: refetchApproval,
+    isRefetching: isRefetchingApproval,
+  } = useContractRead({
     address: htlc.receiverToken,
     abi: erc20ABI,
     functionName: 'allowance',
     args: [ownAddress as any, contractAddresses.contracts?.receiver as any],
-    watch: true,
     enabled: isWithdrawable && isReceiverChain,
   })
 
-  const { config: configApproval } = usePrepareContractWrite({
+  const { config: approvalConfig } = usePrepareContractWrite({
     address: htlc.receiverToken,
     abi: erc20ABI,
     functionName: 'approve',
@@ -183,13 +185,16 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   })
 
   const {
-    data: dataApproval,
-    isLoading: isLoadingApproval,
+    data: approvalWriteData,
+    isLoading: isApprovalWriteLoading,
     write: writeApproval,
-  } = useContractWrite(configApproval)
+  } = useContractWrite(approvalConfig)
   const { isFetching: isTokenApprovalInProgress } = useWaitForTransaction({
-    hash: dataApproval?.hash,
-    onSuccess: () => toast({ title: 'Approval successful', status: 'success' }),
+    hash: approvalWriteData?.hash,
+    onSuccess: () => {
+      refetchApproval()
+      toast({ title: 'Approval successful', status: 'success' })
+    },
   })
 
   function approveTokens() {
@@ -206,6 +211,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
 
   // Withdrawals
   const { config: withdrawConfig } = usePrepareContractWrite({
+    enabled: approvalAmount?.gte(htlc.receiverAmount),
     address: contractAddresses.contracts?.receiver,
     abi: receiverContract.abi,
     functionName: 'startWithdrawal',
@@ -290,9 +296,11 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
         )}
 
         {isWithdrawable &&
-          (sentTokenApprovalAmount?.lt(htlc.receiverAmount) ? (
+          (approvalAmount?.lt(htlc.receiverAmount) ? (
             <Button
-              isLoading={isLoadingApproval || isTokenApprovalInProgress}
+              isLoading={
+                isApprovalWriteLoading || isTokenApprovalInProgress || isRefetchingApproval
+              }
               disabled={!writeApproval}
               onClick={approveTokens}
               colorScheme="blackAlpha"

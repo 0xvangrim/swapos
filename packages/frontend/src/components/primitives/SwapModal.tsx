@@ -73,12 +73,15 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
   }, [amount, toChain, tokenIn, tokenOut])
 
   // Token Approvals
-  const { data: sentTokenApprovalAmount } = useContractRead({
+  const {
+    data: approvalAmount,
+    refetch: refetchApproval,
+    isRefetching: isRefetchingApproval,
+  } = useContractRead({
     address: tokenIn,
     abi: erc20ABI,
     functionName: 'allowance',
     args: [address as any, contractAddresses.contracts?.sender as any],
-    watch: true,
   })
 
   const { config: configApproval } = usePrepareContractWrite({
@@ -101,11 +104,15 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
   } = useContractWrite(configApproval)
   const { isFetching: isTokenApprovalInProgress } = useWaitForTransaction({
     hash: dataApproval?.hash,
-    onSuccess: () => toast({ title: 'Approval successful', status: 'success' }),
+    onSuccess: () => {
+      refetchApproval()
+      toast({ title: 'Approval successful', status: 'success' })
+    },
   })
 
   // New HTLC creation
   const { config } = usePrepareContractWrite({
+    enabled: approvalAmount?.gte(receiverAmount),
     address: contractAddresses.contracts?.sender,
     abi: senderContract.abi,
     functionName: 'newContract',
@@ -246,9 +253,9 @@ export const SwapModal = ({ isOpen, onClose }: { isOpen: any; onClose: any }) =>
           <Divider />
           <ModalFooter>
             <Box display={'flex'} width={'100%'} flexDir={'column'}>
-              {sentTokenApprovalAmount?.gte(senderAmount) ? (
+              {approvalAmount?.gte(senderAmount) ? (
                 <Button
-                  isLoading={isLoading || isInProgress}
+                  isLoading={isLoading || isInProgress || isRefetchingApproval}
                   disabled={!canSubmitRequest || sentToken?.value.lt(senderAmount)}
                   bg={'black'}
                   textColor={'white'}
