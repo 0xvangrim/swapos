@@ -56,7 +56,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
     query: gql`
       query GetHTLCReceipt @live {
         ${receiverChain?.network} {
-          htlcerc20Receipt(id: ${htlc.id}) {
+          htlcerc20Receipt(id: "${htlc.id}") {
             id
             receiver
             receiveStatus
