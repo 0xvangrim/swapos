@@ -12,9 +12,9 @@ Going forward, SwapOS has the potential to expand beyond EVM's into (1) traditio
 
 # Team
 
-Kenny Chung 👨‍🚀 (@kenny-gin1)
-Madusha Prasanjith 👨‍💻 (@mprasanjith)
-Erik Nilsson 👨‍🎨 (@eriknson)
+- Kenny Chung 👨‍🚀 (@kenny-gin1)
+- Madusha Prasanjith 👨‍💻 (@mprasanjith)
+- Erik Nilsson 👨‍🎨 (@eriknson)
 
 ## Get started
 
