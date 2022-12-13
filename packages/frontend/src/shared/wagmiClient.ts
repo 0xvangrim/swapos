@@ -8,28 +8,49 @@ import { env } from './environment'
  * Wagmi.sh Configuration (https://wagmi.sh/docs)
  */
 
-const moonbaseAlpha: Chain = {
-  id: 1287,
-  name: 'Moonbase Alpha',
-  network: 'moonbasealpha',
+// const moonbaseAlpha: Chain = {
+//   id: 1287,
+//   name: 'Moonbase Alpha',
+//   network: 'moonbasealpha',
+//   nativeCurrency: {
+//     name: 'DEV',
+//     symbol: 'DEV',
+//     decimals: 18,
+//   },
+//   rpcUrls: {
+//     default: 'https://moonbase-alpha.public.blastapi.io',
+//   },
+//   blockExplorers: {
+//     default: {
+//       name: 'MoonScan',
+//       url: 'https://moonbase.moonscan.io/',
+//     },
+//   },
+//   testnet: true,
+// }
+
+const fuji: Chain = {
+  id: 43113,
+  name: 'Avalanche Fuji',
+  network: 'fuji',
   nativeCurrency: {
-    name: 'DEV',
-    symbol: 'DEV',
+    name: 'AVAX',
+    symbol: 'AVAX',
     decimals: 18,
   },
   rpcUrls: {
-    default: 'https://moonbase-alpha.public.blastapi.io',
+    default: 'https://api.avax-test.network/ext/bc/C/rpc',
   },
   blockExplorers: {
     default: {
-      name: 'MoonScan',
-      url: 'https://moonbase.moonscan.io/',
+      name: 'Snowtrace',
+      url: 'https://testnet.snowtrace.io/',
     },
   },
   testnet: true,
 }
 
-const allChains = [...allChainsWagmi, moonbaseAlpha]
+const allChains = [...allChainsWagmi, fuji]
 
 export const defaultChain: Chain | undefined = allChains.find(
   (chain) => env.defaultChain === chain.id,
@@ -69,7 +90,7 @@ const { connectors } = getDefaultWallets({
 })
 
 export const wagmiClient = createClient({
-  autoConnect: true,
+  autoConnect: false,
   connectors,
   provider,
 })

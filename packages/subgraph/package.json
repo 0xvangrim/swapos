@@ -1,0 +1,21 @@
+{
+  "name": "swapos",
+  "license": "UNLICENSED",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build-subgraph": "graph build",
+    "deploy-mumbai": "graph deploy --product hosted-service mprasanjith/swapos-polygon-mumbai --network mumbai",
+    "deploy-fuji": "graph deploy --product hosted-service mprasanjith/swapos-avalanche-fuji --network fuji",
+    "create-local": "graph create --node http://localhost:8020/ @mprasanjith/swapos-local",
+    "remove-local": "graph remove --node http://localhost:8020/ @mprasanjith/swapos-local",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 @mprasanjith/swapos-local",
+    "test": "graph test"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.37.1",
+    "@graphprotocol/graph-ts": "0.28.1"
+  },
+  "devDependencies": {
+    "matchstick-as": "0.5.0"
+  }
+}

@@ -1,0 +1,52 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ERC20MultichainAtomicSwapSender
+    network: mumbai
+    source:
+      abi: ERC20MultichainAtomicSwapSender
+      address: "0x010D212ABED378E61b6412C46ceD7396955b5250"
+      startBlock: 29607550
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - HTLCERC20
+      abis:
+        - name: ERC20MultichainAtomicSwapSender
+          file: ../contracts/artifacts/contracts/ERC20MultichainAtomicSwapSender.sol/ERC20MultichainAtomicSwapSender.json
+      eventHandlers:
+        - event: HTLCERC20Created(indexed bytes32,indexed address,address,address,uint32)
+          handler: handleHTLCERC20Created
+        - event: HTLCERC20Refunded(indexed bytes32)
+          handler: handleHTLCERC20Refunded
+        - event: HTLCERC20Withdrawn(indexed bytes32)
+          handler: handleHTLCERC20Withdrawn
+      file: ./src/Sender.ts
+  - kind: ethereum
+    name: ERC20MultichainAtomicSwapReceiver
+    network: mumbai
+    source:
+      abi: ERC20MultichainAtomicSwapReceiver
+      address: "0x77835CA9B4057B5C3C20d9028bc0690C0974DC0d"
+      startBlock: 29607650
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - HTLCERC20Receipt
+      abis:
+        - name: ERC20MultichainAtomicSwapReceiver
+          file: ../contracts/artifacts/contracts/ERC20MultichainAtomicSwapReceiver.sol/ERC20MultichainAtomicSwapReceiver.json
+      eventHandlers:
+        - event: HTLCERC20WithdrawalInitiated(indexed bytes32)
+          handler: handleHTLCERC20WithdrawalInitiated
+        - event: HTLCERC20WithdrawalCompleted(indexed bytes32)
+          handler: handleHTLCERC20WithdrawalCompleted
+        - event: HTLCERC20Refunded(indexed bytes32)
+          handler: handleHTLCERC20Refunded
+      file: ./src/Receiver.ts

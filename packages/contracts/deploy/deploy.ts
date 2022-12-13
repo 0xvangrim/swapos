@@ -19,8 +19,9 @@ export type HelloWorldConfig = SenderConfig
 export type SenderConfig = RouterConfig & { senderDomain: number }
 
 export const prodConfigs = {
-  mumbai: chainConnectionConfigs.mumbai,
-  moonbasealpha: chainConnectionConfigs.moonbasealpha,
+  alfajores: chainConnectionConfigs.alfajores,
+  // mumbai: chainConnectionConfigs.mumbai,
+  fuji: chainConnectionConfigs.fuji,
 }
 
 async function main() {
@@ -37,13 +38,13 @@ async function main() {
   const core = HyperlaneCore.fromEnvironment('testnet2', multiProvider)
   const config = core.getConnectionClientConfigMap()
 
-  const senderConfig = objMap(config, key => ({
+  const senderConfig = objMap(config, (key) => ({
     ...config[key],
     owner: signer.address,
     senderDomain: ChainNameToDomainId[key],
   }))
 
-  const receiverConfig = objMap(config, key => ({
+  const receiverConfig = objMap(config, (key) => ({
     ...config[key],
     owner: signer.address,
     receiverDomain: ChainNameToDomainId[key],

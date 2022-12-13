@@ -1,0 +1,38 @@
+enum HTLCSendStatus {
+  PENDING,
+  COMPLETED,
+  REFUNDED
+}
+
+enum HTLCReceiveStatus {
+  PENDING,
+  COMPLETED,
+  REFUNDED
+}
+
+type HTLCERC20 @entity {
+  id: ID!
+
+  sender: Bytes!
+  senderDomain: BigInt!
+  senderToken: Bytes!
+  senderAmount: BigInt!
+
+  receiver: Bytes
+  receiverDomain: BigInt!
+  receiverToken: Bytes!
+  receiverAmount: BigInt!
+
+  createdAt: BigInt!
+  timelock: BigInt!
+
+  sendStatus: HTLCSendStatus!
+  # withdrawalStatus: HTLCWithdrawalStatus!
+}
+
+type HTLCERC20Receipt @entity {
+  id: ID!
+
+  receiver: Bytes!
+  receiveStatus: HTLCReceiveStatus! 
+}
