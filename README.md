@@ -8,9 +8,9 @@ SwapOS is a minimalistic peer-to-peer protocol enabling ERC20-token transfers cr
 
 Going forward, SwapOS has the potential to expand beyond EVM's into (1) traditional finance / fiat transfers and (2) other chains (e.g. Bitcoin, Solana, and Gnosis). Swapping tokens cross-chains and without a middleman has never been easier.
 
-**Live on: https://swapos.vercel.app/**
+**Live on [swapos.vercel.app](https://swapos.vercel.app/)**
 
-# Team
+## Team
 
 - Kenny Chung 👨‍🚀 (@kenny-gin1)
 - Madusha Prasanjith 👨‍💻 (@mprasanjith)
