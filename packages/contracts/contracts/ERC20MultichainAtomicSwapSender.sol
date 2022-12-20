@@ -2,10 +2,11 @@
 pragma solidity ^0.8.8;
 
 import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+import '@openzeppelin/contracts/utils/structs/EnumerableSet.sol';
 import 'hardhat/console.sol';
-import { Router } from "@hyperlane-xyz/core/contracts/Router.sol";
-import { TypeCasts } from "@hyperlane-xyz/core/contracts/libs/TypeCasts.sol";
-import { SwapMessage } from "./util/SwapMessage.sol";
+import {Router} from '@hyperlane-xyz/core/contracts/Router.sol';
+import {TypeCasts} from '@hyperlane-xyz/core/contracts/libs/TypeCasts.sol';
+import {SwapMessage} from './util/SwapMessage.sol';
 
 /**
  * Splits the ERC20AtomicSwap to be able to communicate with another instance of itself.
@@ -14,6 +15,7 @@ contract ERC20MultichainAtomicSwapSender is Router {
   using TypeCasts for bytes32;
   using TypeCasts for address;
   using SwapMessage for bytes;
+  using EnumerableSet for EnumerableSet.Bytes32Set;
 
   event HTLCERC20Created(
     bytes32 indexed htlcId,
@@ -29,19 +31,18 @@ contract ERC20MultichainAtomicSwapSender is Router {
     address sender;
     address senderToken;
     uint256 senderAmount;
-
     address receiver;
     uint32 receiverDomain;
     address receiverToken;
     uint256 receiverAmount;
-    
     uint256 timelock;
     bool withdrawn;
     bool refunded;
   }
 
-  mapping(bytes32 => HTLCContract) htlcs;
-  uint32 senderDomain;
+  mapping(bytes32 => HTLCContract) private htlcs;
+  EnumerableSet.Bytes32Set private htlcIds;
+  uint32 private senderDomain;
 
   modifier tokensTransferable(
     address _token,
@@ -79,7 +80,7 @@ contract ERC20MultichainAtomicSwapSender is Router {
     // This check needs to be added if claims are allowed after timeout. That is, if the following timelock check is commented out
     // require(htlcs[_htlcId].refunded == false, 'withdrawable: already refunded');
     // if we want to disallow claim to be made after the timeout, uncomment the following line
-    require(htlcs[_htlcId].timelock > block.timestamp, "withdrawable: timelock expired");
+    require(htlcs[_htlcId].timelock > block.timestamp, 'withdrawable: timelock expired');
     _;
   }
 
@@ -87,10 +88,7 @@ contract ERC20MultichainAtomicSwapSender is Router {
     require(htlcs[_htlcId].sender == msg.sender, 'refundable: not sender');
     require(htlcs[_htlcId].refunded == false, 'refundable: already refunded');
     require(htlcs[_htlcId].withdrawn == false, 'refundable: already withdrawn');
-    require(
-      htlcs[_htlcId].timelock <= block.timestamp,
-      'refundable: timelock not yet passed'
-    );
+    require(htlcs[_htlcId].timelock <= block.timestamp, 'refundable: timelock not yet passed');
     _;
   }
 
@@ -99,12 +97,9 @@ contract ERC20MultichainAtomicSwapSender is Router {
     address _interchainGasPaymaster,
     uint32 _senderDomain
   ) external initializer {
-      // transfers ownership to `msg.sender`
-      __AbacusConnectionClient_initialize(
-          _connectionManager,
-          _interchainGasPaymaster
-      );
-      senderDomain = _senderDomain;
+    // transfers ownership to `msg.sender`
+    __AbacusConnectionClient_initialize(_connectionManager, _interchainGasPaymaster);
+    senderDomain = _senderDomain;
   }
 
   function newContract(
@@ -121,8 +116,8 @@ contract ERC20MultichainAtomicSwapSender is Router {
     futureTimelock(_timelock)
     returns (bytes32 htlcId)
   {
-htlcId = _getHtlcId(
-      _getSenderHash(msg.sender, senderDomain, _senderToken, _senderAmount), 
+    htlcId = _getHtlcId(
+      _getSenderHash(msg.sender, senderDomain, _senderToken, _senderAmount),
       _getReceiverHash(_receiverDomain, _receiverToken, _receiverAmount),
       _timelock
     );
@@ -147,14 +142,9 @@ htlcId = _getHtlcId(
       false,
       false
     );
+    htlcIds.add(htlcId);
 
-    emit HTLCERC20Created(
-      htlcId,
-      msg.sender,
-      _senderToken,
-      _receiverToken,
-      _receiverDomain
-    );
+    emit HTLCERC20Created(htlcId, msg.sender, _senderToken, _receiverToken, _receiverDomain);
   }
 
   function refund(bytes32 _htlcId)
@@ -171,10 +161,7 @@ htlcId = _getHtlcId(
     return true;
   }
 
-  function _withdraw(
-    bytes32 _htlcId,
-    address receiver
-  ) internal returns (bool) {
+  function _withdraw(bytes32 _htlcId, address receiver) internal returns (bool) {
     HTLCContract storage c = htlcs[_htlcId];
     c.receiver = receiver;
     c.withdrawn = true;
@@ -185,7 +172,7 @@ htlcId = _getHtlcId(
       SwapMessage.format(_htlcId, c.sender.addressToBytes32()),
       msg.value
     );
-    
+
     emit HTLCERC20Withdrawn(_htlcId);
     return true;
   }
@@ -230,7 +217,11 @@ htlcId = _getHtlcId(
   function getDomain() public view returns (uint32 _senderDomain) {
     _senderDomain = senderDomain;
   }
-  
+
+  function getHTLCIds() public view returns (bytes32[] memory) {
+    return htlcIds.values();
+  }
+
   function _handle(
     uint32 origin,
     bytes32,
