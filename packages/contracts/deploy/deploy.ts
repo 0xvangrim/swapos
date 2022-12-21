@@ -9,7 +9,7 @@ import {
 } from '@hyperlane-xyz/sdk'
 import { utils } from '@hyperlane-xyz/utils'
 import dotenv from 'dotenv'
-import { Wallet } from 'ethers'
+import { ContractTransaction, Wallet } from 'ethers'
 import { ReceiverDeployer } from '../test/utils/deployReceiver'
 import { SenderDeployer } from '../test/utils/deploySender'
 
@@ -19,8 +19,8 @@ export type HelloWorldConfig = SenderConfig
 export type SenderConfig = RouterConfig & { senderDomain: number }
 
 export const prodConfigs = {
-  alfajores: chainConnectionConfigs.alfajores,
-  // mumbai: chainConnectionConfigs.mumbai,
+  // alfajores: chainConnectionConfigs.alfajores,
+  moonbasealpha: chainConnectionConfigs.moonbasealpha,
   fuji: chainConnectionConfigs.fuji,
 }
 
@@ -67,10 +67,9 @@ async function main() {
   console.log(JSON.stringify(receiverAddresses))
 
   console.log('Performing Router Registrations...')
-  const registrations: Promise<any>[] = []
+  const registrations: Promise<ContractTransaction>[] = []
   Object.entries(senderContracts).forEach(([chainSender, senderContracts]) => {
     const localSender = senderContracts.router
-
     Object.entries(receiverContracts).forEach(([chainReceiver, receiverContracts]) => {
       if (chainSender === chainReceiver) return
       const remoteReceiver = receiverContracts.router
@@ -79,6 +78,21 @@ async function main() {
         localSender.enrollRemoteRouter(
           ChainNameToDomainId[chainReceiver],
           utils.addressToBytes32(remoteReceiver.address),
+        ),
+      )
+    })
+  })
+
+  Object.entries(receiverContracts).forEach(([chainReceiver, receiverContracts]) => {
+    const localReceiver = receiverContracts.router
+    Object.entries(senderContracts).forEach(([chainSender, senderContracts]) => {
+      if (chainSender === chainReceiver) return
+      const remoteSender = senderContracts.router
+
+      registrations.push(
+        localReceiver.enrollRemoteRouter(
+          ChainNameToDomainId[chainSender],
+          utils.addressToBytes32(remoteSender.address),
         ),
       )
     })

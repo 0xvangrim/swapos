@@ -20,12 +20,12 @@ export type SenderConfig = RouterConfig & { senderDomain: number }
 
 export const prodConfigs = {
   // alfajores: chainConnectionConfigs.alfajores,
-  mumbai: chainConnectionConfigs.mumbai,
+  moonbasealpha: chainConnectionConfigs.moonbasealpha,
   fuji: chainConnectionConfigs.fuji,
 }
 
 const contracts = {
-  mumbai: require('../deployments/80001.json'),
+  moonbasealpha: require('../deployments/1287.json'),
   fuji: require('../deployments/43113.json'),
 }
 
@@ -45,23 +45,23 @@ async function main() {
   }))
   const multiProvider = new MultiProvider(chainProviders)
 
-  const mumbaiSigner = multiProvider.getChainSigner('mumbai')
+  const fujiSigner = multiProvider.getChainSigner('fuji')
 
-  //   const mumbaiSender = contracts.mumbai?.sender as string
-  //   const senderContract = new ethers.Contract(mumbaiSender, artifacts.sender.abi, mumbaiSigner);
-  //   console.log({ routers: await senderContract.routers(ChainNameToDomainId["fuji"]) })
+  const fujiReceiver = contracts.fuji?.receiver as string
+  const receiverContract = new ethers.Contract(fujiReceiver, artifacts.receiver.abi, fujiSigner)
+  console.log({ routers: await receiverContract.routers(ChainNameToDomainId['moonbasealpha']) })
 
-  const mumbaiReceiver = contracts.mumbai?.receiver as string
-  const receiverContract = new ethers.Contract(mumbaiReceiver, artifacts.sender.abi, mumbaiSigner)
-  //   console.log({
-  //     routers: await receiverContract.enrollRemoteRouter(
-  //       ChainNameToDomainId['mumbai'],
-  //       utils.addressToBytes32(contracts.mumbai?.sender),
-  //     ),
-  //   })
-  console.log({
-    routers: await receiverContract.routers(ChainNameToDomainId['fuji']),
-  })
+  // const moonbaseReceiver = contracts.moonbasealpha?.receiver as string
+  // const receiverContract = new ethers.Contract(moonbaseReceiver, artifacts.sender.abi, moonbaseSigner)
+  // console.log({
+  //   routers: await receiverContract.routers(ChainNameToDomainId['fuji']),
+  // })
+  // console.log({
+  //   routers: await receiverContract.enrollRemoteRouter(
+  //     ChainNameToDomainId['moonbasealpha'],
+  //     utils.addressToBytes32(contracts.moonbasealpha?.sender),
+  //   ),
+  // })
 }
 
 main()
