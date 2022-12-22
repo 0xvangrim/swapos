@@ -8,26 +8,26 @@ import { env } from './environment'
  * Wagmi.sh Configuration (https://wagmi.sh/docs)
  */
 
-// const moonbaseAlpha: Chain = {
-//   id: 1287,
-//   name: 'Moonbase Alpha',
-//   network: 'moonbasealpha',
-//   nativeCurrency: {
-//     name: 'DEV',
-//     symbol: 'DEV',
-//     decimals: 18,
-//   },
-//   rpcUrls: {
-//     default: 'https://moonbase-alpha.public.blastapi.io',
-//   },
-//   blockExplorers: {
-//     default: {
-//       name: 'MoonScan',
-//       url: 'https://moonbase.moonscan.io/',
-//     },
-//   },
-//   testnet: true,
-// }
+const moonbaseAlpha: Chain = {
+  id: 1287,
+  name: 'Moonbase Alpha',
+  network: 'moonbasealpha',
+  nativeCurrency: {
+    name: 'DEV',
+    symbol: 'DEV',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: 'https://moonbase-alpha.public.blastapi.io',
+  },
+  blockExplorers: {
+    default: {
+      name: 'MoonScan',
+      url: 'https://moonbase.moonscan.io/',
+    },
+  },
+  testnet: true,
+}
 
 const fuji: Chain = {
   id: 43113,
@@ -50,7 +50,7 @@ const fuji: Chain = {
   testnet: true,
 }
 
-const allChains = [...allChainsWagmi, fuji]
+const allChains = [...allChainsWagmi, moonbaseAlpha, fuji]
 
 export const defaultChain: Chain | undefined = allChains.find(
   (chain) => env.defaultChain === chain.id,

@@ -10,16 +10,23 @@ const tokens: Token[] = [
     symbol: 'USDC',
     name: 'USDC',
     addresses: {
-      '80001': '0xE097d6B3100777DC31B34dC2c58fB524C2e76921',
       '43113': '0x5425890298aed601595a70AB815c96711a31Bc65',
     },
     decimals: 6,
   },
   {
-    symbol: 'BUSD',
-    name: 'BUSD',
+    symbol: 'ALOT',
+    name: 'Dexalot',
     addresses: {
-      '80001': '0x8FF61D7466752700dA43184Aa0c06F6e558B543b',
+      '43113': '0x9983F755Bbd60d1886CbfE103c98C272AA0F03d6',
+    },
+    decimals: 18,
+  },
+  {
+    symbol: 'JUP',
+    name: 'Jupyter',
+    addresses: {
+      '1287': '0x9Aac6FB41773af877a2Be73c99897F3DdFACf576',
     },
     decimals: 18,
   },

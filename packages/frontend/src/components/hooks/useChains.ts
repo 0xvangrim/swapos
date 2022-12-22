@@ -5,7 +5,7 @@ const useChains = () => {
   const { chains, chain } = useNetwork()
 
   const currentChain = useMemo(() => {
-    if (!chain) return chains[0] || { network: 'mumbai' }
+    if (!chain) return chains[0] || { network: 'moonbeamalpha' }
     return chain
   }, [chain, chains])
 

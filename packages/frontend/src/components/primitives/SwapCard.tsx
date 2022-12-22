@@ -13,19 +13,17 @@ import {
   useToken,
   useWaitForTransaction,
 } from 'wagmi'
-import { HTLCERC20 } from '../../../.graphclient'
 import { domainIdToChainId } from '@config/chains'
 import { useMemo } from 'react'
-import { BigNumber, utils } from 'ethers'
-import { fromUnixTime, isAfter, isBefore } from 'date-fns'
+import { BigNumber, constants, utils } from 'ethers'
+import { fromUnixTime, isPast } from 'date-fns'
 import { useDeployments } from '@shared/useDeployments'
 import senderContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapSender.sol/ERC20MultichainAtomicSwapSender.json'
 import receiverContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapReceiver.sol/ERC20MultichainAtomicSwapReceiver.json'
-import { useQuery } from 'urql'
-import gql from 'graphql-tag'
+import { HTLC } from '@components/helpers/HTLC'
 
 interface SwapCardProps {
-  htlc: HTLCERC20
+  htlc: HTLC
   invert?: boolean
 }
 
@@ -36,7 +34,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
 
   const { chain, chains } = useNetwork()
 
-  const senderChainId = useMemo(() => domainIdToChainId[htlc.senderDomain], [htlc.senderDomain])
+  const senderChainId = useMemo(() => domainIdToChainId[htlc.senderDomain], [htlc])
   const receiverChainId = useMemo(
     () => domainIdToChainId[htlc.receiverDomain],
     [htlc.receiverDomain],
@@ -51,42 +49,37 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
     [chains, receiverChainId],
   )
 
-  const [receipt] = useQuery({
-    requestPolicy: 'network-only',
-    query: gql`
-      query GetHTLCReceipt @live {
-        ${receiverChain?.network} {
-          htlcerc20Receipt(id: "${htlc.id}") {
-            id
-            receiver
-            receiveStatus
-          }
-        }
-      }
-    `,
+  const receiverContractAddress = useMemo(() => {
+    const contractsMatch = contractAddresses[receiverChainId]
+    return contractsMatch?.receiver
+  }, [contractAddresses, receiverChainId])
+
+  const { data: htlcReceipt, ...rest } = useContractRead({
+    address: receiverContractAddress,
+    abi: receiverContract.abi,
+    functionName: 'getHTLC',
+    args: [htlc.id],
+    chainId: receiverChainId,
+    watch: true,
   })
 
-  const receiptStatus = useMemo(
-    () => receipt.data?.[receiverChain?.network as string]?.htlcerc20Receipts?.receiveStatus,
-    [receipt, receiverChain],
-  )
-  const hasReceiptStatus = useMemo(() => !!receiptStatus, [receiptStatus])
+  const hasReceipt = useMemo(() => htlcReceipt?.receiver != constants.AddressZero, [htlcReceipt])
 
   const isSender = useMemo(
     () => ownAddress?.toLowerCase() === htlc.sender?.toLowerCase(),
     [htlc, ownAddress],
   )
   const isReceiver = useMemo(
-    () => ownAddress?.toLowerCase() === htlc.receiver?.toLowerCase(),
+    () => ownAddress?.toLowerCase() === htlcReceipt?.receiver?.toLowerCase(),
     [htlc, ownAddress],
   )
 
   const { data: senderToken } = useToken({
-    address: htlc.senderToken,
+    address: htlc.senderToken as any,
     chainId: senderChainId,
   })
-  const { data: receiverToken } = useToken({
-    address: htlc.receiverToken,
+  const { data: receiverToken, ...err } = useToken({
+    address: htlc.receiverToken as any,
     chainId: receiverChainId,
   })
 
@@ -103,21 +96,34 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   const isSenderChain = useMemo(() => chain?.id === senderChainId, [chain, senderChainId])
   const isReceiverChain = useMemo(() => chain?.id === receiverChainId, [chain, receiverChainId])
 
-  const isExpired = useMemo(() => isAfter(new Date(), fromUnixTime(htlc.timelock)), [htlc])
-  const isCompleted = useMemo(() => htlc.sendStatus !== 'PENDING', [htlc])
+  const isExpired = useMemo(() => isPast(fromUnixTime(htlc.timelock.toNumber())), [htlc])
+
+  const status = useMemo(() => {
+    if ((htlc.withdrawn && htlcReceipt?.confirmed) || (htlc.refunded && htlcReceipt?.refunded))
+      return 'Complete'
+
+    if (htlc.withdrawn || htlcReceipt?.confirmed) return 'In Progress'
+
+    if (htlc.refunded || htlcReceipt?.refunded) return 'Refunded'
+
+    if (isExpired) return 'Refundable'
+
+    return 'Pending'
+  }, [htlc, htlcReceipt, isExpired])
+
+  const isCompleted = useMemo(() => status === 'Complete', [status])
 
   const isWithdrawable = useMemo(
-    () => !(isSender || isReceiver || isExpired || isCompleted || hasReceiptStatus),
-    [isSender, isReceiver, isExpired, htlc],
-  )
-  const isRefundable = useMemo(
-    () => (isSender || isReceiver) && isExpired && !isCompleted,
-    [isSender, isReceiver, isExpired, htlc],
+    () => !(isSender || isReceiver || isExpired || isCompleted || hasReceipt),
+    [isSender, isReceiver, isExpired, isCompleted, hasReceipt],
   )
 
-  function capitalize(string: string) {
-    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase()
-  }
+  const isRefundable = useMemo(
+    () =>
+      status === 'Refundable' &&
+      ((isSender && !htlc.refunded) || (isReceiver && !htlcReceipt.refunded)),
+    [isSender, isReceiver, isExpired, isCompleted],
+  )
 
   // Refunds
   const { config: refundConfig } = usePrepareContractWrite({
@@ -143,7 +149,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
       toast({
         title: 'Switch network',
         status: 'warning',
-        description: 'You need to switch network to continue',
+        description: `You need to switch network to ${senderChain?.name} to continue`,
       })
       switchToSenderChain?.()
       return
@@ -155,7 +161,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   // Withdrawals - Balance checks
   const { data: receiverTokenBalance } = useBalance({
     address: ownAddress,
-    token: htlc.receiverToken,
+    token: htlc.receiverToken as any,
     enabled: isWithdrawable && isReceiverChain,
   })
   const userHasBalance = useMemo(
@@ -291,7 +297,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
             paddingInlineEnd="4"
             color={'black'}
           >
-            {capitalize(receiptStatus || htlc.sendStatus)}
+            {status}
           </Box>
         )}
 

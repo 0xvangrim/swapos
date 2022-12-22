@@ -1,32 +1,28 @@
 import { Box, Heading } from '@chakra-ui/react'
-import { FC, useMemo } from 'react'
+import { FC } from 'react'
 import { SwapCard } from '../primitives/SwapCard'
-import { useAccount, useNetwork } from 'wagmi'
-import useSwaps from '@components/hooks/useSwaps'
+import { useAccount } from 'wagmi'
+import useSwapsOrganized from '@components/hooks/useSwapsOrganized'
 
 const RequestedSwapsWrapper: FC = () => {
   const { isConnected } = useAccount()
-  const { chain } = useNetwork()
 
-  const data = useSwaps()
+  const { activeSwaps, ownSwaps, finishedSwaps } = useSwapsOrganized()
 
-  const ownSwaps = useMemo(() => {
-    const ownHtlcs = []
-    ownHtlcs.push(...(data?.liveUserSentSwaps?.htlcerc20S || []))
-    ownHtlcs.push(...(data?.liveUserReceivedSwaps?.htlcerc20S || []))
-    ownHtlcs.push(...(data?.expiredUserSentSwaps?.htlcerc20S || []))
-    ownHtlcs.push(...(data?.expiredUserReceivedSwaps?.htlcerc20S || []))
-    return ownHtlcs
-  }, [data])
-
-  const activeSwaps = useMemo(() => data?.livePendingSwaps?.htlcerc20S || [], [data])
-
-  const finishedSwaps = useMemo(() => {
-    const finishedHtlcs = []
-    finishedHtlcs.push(...(data?.completedUserReceivedSwaps?.htlcerc20S || []))
-    finishedHtlcs.push(...(data?.completedUserSentSwaps?.htlcerc20S || []))
-    return finishedHtlcs
-  }, [data])
+  if (!isConnected)
+    return (
+      <Box marginTop={'16px'} marginBottom={'16px'} textAlign="center">
+        <Heading
+          fontSize={'24px'}
+          color={'#C5C5C5'}
+          fontStyle={'normal'}
+          lineHeight={'26px'}
+          fontWeight={500}
+        >
+          Connect your wallet to see available swaps
+        </Heading>
+      </Box>
+    )
 
   return (
     <>
@@ -39,7 +35,7 @@ const RequestedSwapsWrapper: FC = () => {
         backgroundColor={'#F9F9F9'}
         padding={'16px'}
       >
-        {ownSwaps?.length > 0 && (
+        {ownSwaps && (
           <>
             <Box marginTop={'16px'} marginBottom={'16px'}>
               <Heading
@@ -49,37 +45,39 @@ const RequestedSwapsWrapper: FC = () => {
                 lineHeight={'26px'}
                 fontWeight={500}
               >
-                Your swaps
+                Your requests
               </Heading>
             </Box>
             <Box>
-              {isConnected && ownSwaps?.map((htlc) => <SwapCard key={htlc.id} htlc={htlc} />)}
-            </Box>
-          </>
-        )}
-
-        {activeSwaps.length > 0 && (
-          <>
-            <Box marginTop={'16px'} marginBottom={'16px'}>
-              <Heading
-                fontSize={'24px'}
-                color={'#C5C5C5'}
-                fontStyle={'normal'}
-                lineHeight={'26px'}
-                fontWeight={500}
-              >
-                Requested swaps
-              </Heading>
-            </Box>
-            <Box>
-              {activeSwaps?.map((htlc) => (
+              {ownSwaps?.map((htlc) => (
                 <SwapCard key={htlc.id} htlc={htlc} />
               ))}
             </Box>
           </>
         )}
 
-        {finishedSwaps.length > 0 && (
+        {activeSwaps && (
+          <>
+            <Box marginTop={'16px'} marginBottom={'16px'}>
+              <Heading
+                fontSize={'24px'}
+                color={'#C5C5C5'}
+                fontStyle={'normal'}
+                lineHeight={'26px'}
+                fontWeight={500}
+              >
+                Available requests
+              </Heading>
+            </Box>
+            <Box>
+              {activeSwaps?.map((htlc) => (
+                <SwapCard key={htlc.id} htlc={htlc} invert />
+              ))}
+            </Box>
+          </>
+        )}
+
+        {finishedSwaps && (
           <>
             <Box marginTop={'16px'} marginBottom={'16px'}>
               <Heading
@@ -93,7 +91,9 @@ const RequestedSwapsWrapper: FC = () => {
               </Heading>
             </Box>
             <Box>
-              {isConnected && finishedSwaps?.map((htlc) => <SwapCard key={htlc.id} htlc={htlc} />)}
+              {finishedSwaps?.map((htlc) => (
+                <SwapCard key={htlc.id} htlc={htlc} />
+              ))}
             </Box>
           </>
         )}

@@ -137,8 +137,8 @@ const useSwaps = (): useSwapsReturn => {
         }
       `,
   })
+
   const { data } = result
-  console.log({ currUnixTime, data })
   return data
 }
 

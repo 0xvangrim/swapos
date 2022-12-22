@@ -1,37 +1,34 @@
 import { deployments } from '@deployments/deployments'
 import { useState } from 'react'
 import { useAsyncEffect } from 'use-async-effect'
-import { Chain, useNetwork } from 'wagmi'
-import { defaultChain } from './wagmiClient'
 import { DeploymentAddresses } from '@deployments/deployments'
+import useChains from '@components/hooks/useChains'
 
 export const useDeployments = () => {
-  const { chain } = useNetwork()
-  const [useDefaultChain, setUseDefaultChain] = useState<boolean>()
-  const [contractsChain, setContractsChain] = useState<Chain>()
-  const [contractsChainId, setContractsChainId] = useState<number>()
+  const { currentChain, otherChain } = useChains()
   const [contracts, setContracts] = useState<DeploymentAddresses>()
+  const [otherChainContracts, setOtherChainContracts] = useState<DeploymentAddresses>()
 
   useAsyncEffect(async () => {
-    const contractsChain = !chain || chain.unsupported ? defaultChain : chain
-    if (contractsChain) {
-      const contracts = await deployments[contractsChain.id]
-      setUseDefaultChain(useDefaultChain)
-      setContractsChain(contractsChain)
-      setContractsChainId(contractsChain.id)
+    if (currentChain) {
+      const contracts = await deployments[currentChain.id]
       setContracts(contracts)
     } else {
-      setUseDefaultChain(undefined)
-      setContractsChain(undefined)
-      setContractsChainId(undefined)
       setContracts(undefined)
     }
-  }, [chain])
+
+    if (otherChain) {
+      const otherChainContracts = await deployments[otherChain.id]
+      setOtherChainContracts(otherChainContracts)
+    } else {
+      setOtherChainContracts(undefined)
+    }
+  }, [currentChain, otherChain])
 
   return {
-    useDefaultChain,
-    contractsChain,
-    contractsChainId,
     contracts,
+    otherContracts: otherChainContracts,
+    [currentChain?.id]: contracts,
+    [otherChain?.id]: otherChainContracts,
   }
 }

@@ -83,20 +83,20 @@ async function main() {
     })
   })
 
-  Object.entries(receiverContracts).forEach(([chainReceiver, receiverContracts]) => {
-    const localReceiver = receiverContracts.router
-    Object.entries(senderContracts).forEach(([chainSender, senderContracts]) => {
-      if (chainSender === chainReceiver) return
-      const remoteSender = senderContracts.router
+  // Object.entries(receiverContracts).forEach(([chainReceiver, receiverContracts]) => {
+  //   const localReceiver = receiverContracts.router
+  //   Object.entries(senderContracts).forEach(([chainSender, senderContracts]) => {
+  //     if (chainSender === chainReceiver) return
+  //     const remoteSender = senderContracts.router
 
-      registrations.push(
-        localReceiver.enrollRemoteRouter(
-          ChainNameToDomainId[chainSender],
-          utils.addressToBytes32(remoteSender.address),
-        ),
-      )
-    })
-  })
+  //     registrations.push(
+  //       localReceiver.enrollRemoteRouter(
+  //         ChainNameToDomainId[chainSender],
+  //         utils.addressToBytes32(remoteSender.address),
+  //       ),
+  //     )
+  //   })
+  // })
 
   console.log('Found ' + registrations.length + ' Registrations to Perform...')
   await Promise.all(registrations)
