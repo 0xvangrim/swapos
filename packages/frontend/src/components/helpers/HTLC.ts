@@ -14,3 +14,9 @@ export type HTLC = {
   withdrawn: boolean
   refunded: boolean
 }
+
+export type HTLCReceipt = {
+  receiver: string
+  confirmed: boolean
+  refunded: boolean
+}

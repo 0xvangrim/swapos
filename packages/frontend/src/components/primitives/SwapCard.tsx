@@ -20,7 +20,7 @@ import { fromUnixTime, isPast } from 'date-fns'
 import { useDeployments } from '@shared/useDeployments'
 import senderContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapSender.sol/ERC20MultichainAtomicSwapSender.json'
 import receiverContract from '@ethathon/contracts/artifacts/contracts/ERC20MultichainAtomicSwapReceiver.sol/ERC20MultichainAtomicSwapReceiver.json'
-import { HTLC } from '@components/helpers/HTLC'
+import { HTLC, HTLCReceipt } from '@components/helpers/HTLC'
 
 interface SwapCardProps {
   htlc: HTLC
@@ -54,7 +54,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
     return contractsMatch?.receiver
   }, [contractAddresses, receiverChainId])
 
-  const { data: htlcReceipt, ...rest } = useContractRead({
+  const htlcReceiptData = useContractRead({
     address: receiverContractAddress,
     abi: receiverContract.abi,
     functionName: 'getHTLC',
@@ -62,6 +62,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
     chainId: receiverChainId,
     watch: true,
   })
+  const htlcReceipt = htlcReceiptData?.data as HTLCReceipt
 
   const hasReceipt = useMemo(() => htlcReceipt?.receiver != constants.AddressZero, [htlcReceipt])
 
