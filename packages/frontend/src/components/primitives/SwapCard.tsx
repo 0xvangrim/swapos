@@ -96,7 +96,7 @@ export const SwapCard: FC<SwapCardProps> = ({ htlc, invert }) => {
   const isSenderChain = useMemo(() => chain?.id === senderChainId, [chain, senderChainId])
   const isReceiverChain = useMemo(() => chain?.id === receiverChainId, [chain, receiverChainId])
 
-  const isExpired = useMemo(() => isPast(fromUnixTime(htlc.timelock.toNumber())), [htlc])
+  const isExpired = useMemo(() => isPast(fromUnixTime(htlc.timelock?.toNumber())), [htlc])
 
   const status = useMemo(() => {
     if ((htlc.withdrawn && htlcReceipt?.confirmed) || (htlc.refunded && htlcReceipt?.refunded))

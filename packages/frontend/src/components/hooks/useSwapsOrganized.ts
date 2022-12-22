@@ -21,7 +21,7 @@ const useSwapsOrganized = (): useSwapsOrganizedReturn => {
   const combinedSwaps: HTLC[] = useMemo(
     () =>
       [...(swaps || []), ...(swapsOtherChain || [])].sort(
-        (a, b) => b.timelock.toNumber() - a.timelock.toNumber(),
+        (a, b) => b.timelock?.toNumber() - a.timelock?.toNumber(),
       ),
     [swaps, swapsOtherChain],
   )
@@ -38,7 +38,7 @@ const useSwapsOrganized = (): useSwapsOrganizedReturn => {
   const activeSwaps = useMemo(() => {
     return swapsOtherChain?.filter((htlc) => {
       return (
-        isFuture(fromUnixTime(htlc.timelock.toNumber())) &&
+        isFuture(fromUnixTime(htlc.timelock?.toNumber())) &&
         !htlc.withdrawn &&
         !htlc.refunded &&
         htlc.sender !== addressStr
