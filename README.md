@@ -10,6 +10,8 @@ Going forward, SwapOS has the potential to expand beyond EVM's into (1) traditio
 
 **Live on [swapos.vercel.app](https://swapos.vercel.app/)**
 
+**[Demo Presentation](https://drive.google.com/file/d/1dVppu2cHt9G24Qv1eddEF_Srv9tvYmEa/view?usp=share_link)**
+
 ## Team
 
 - Kenny Chung 👨‍🚀 (@kenny-gin1)
